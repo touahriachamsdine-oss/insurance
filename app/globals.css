@@ -1,26 +1,340 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* =========================================================
+   CLASS-BASED THEME VARIANTS FOR TAILWIND V4
+   .light  → Warm Cream + Sage
+   .dark   → Charcoal Forest + Sage
+   .night  → Deep Midnight + Mint
+   ========================================================= */
+
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant night (&:where(.night, .night *));
+
+/* =========================================================
+   LIGHT MODE  —  palette: #FDF6ED · #DCCFC0 · #A1BC98 · #778873
+   Philosophy: warm cream canvas, sage-washed surfaces, bold sage accents
+   ========================================================= */
+:root,
+.light {
+  /* Core backgrounds */
+  --bg-base:       #FDF6ED;   /* warm cream — page canvas */
+  --bg-surface:    #f5ede0;   /* slightly deeper cream — cards, panels */
+  --bg-muted:      #eddfd0;   /* sand — muted sections */
+  --bg-subtle:     #e4d4c2;   /* darker sand — hover states */
+  --bg-sage:       #e8f0e5;   /* sage-tinted white — featured cards */
+  --bg-sage-deep:  #d6e8d2;   /* deeper sage — highlighted panels */
+
+  /* Borders */
+  --border:        #DCCFC0;   /* warm sand border */
+  --border-sage:   #b8d0b3;   /* sage green border */
+  --border-strong: #A1BC98;   /* mint-sage — prominent borders */
+
+  /* Text */
+  --text-primary:  #1e2a20;   /* deep forest — headings */
+  --text-body:     #3a4a3c;   /* dark sage — body text */
+  --text-muted:    #778873;   /* sage — muted/secondary text */
+  --text-faint:    #9aaa96;   /* light sage — placeholders, hints */
+
+  /* Sage accents (primary brand color family) */
+  --sage-50:  #f2f7f1;
+  --sage-100: #e8f0e5;
+  --sage-200: #d0e3cb;
+  --sage-300: #A1BC98;   /* mint-sage — KEY accent */
+  --sage-400: #8aaa81;
+  --sage-500: #778873;   /* sage green — PRIMARY brand */
+  --sage-600: #627560;
+  --sage-700: #4e5f4c;
+  --sage-800: #3a4838;
+  --sage-900: #263026;
+
+  /* Warm sand */
+  --sand-100: #FDF6ED;
+  --sand-200: #f5ede0;
+  --sand-300: #DCCFC0;
+  --sand-400: #c8b8a5;
+  --sand-500: #b0998a;
+
+  /* Zinc remaps — now sage-tinted for light mode */
+  --zinc-50:  #FDF6ED;
+  --zinc-100: #f0e8db;
+  --zinc-200: #DCCFC0;
+  --zinc-300: #c5b5a4;
+  --zinc-400: #a0aa9c;
+  --zinc-450: #8a9e86;
+  --zinc-500: #778873;
+  --zinc-600: #627560;
+  --zinc-700: #4e5f4c;
+  --zinc-800: #3a4838;
+  --zinc-900: #263026;
+  --zinc-950: #141a15;
+
+  /* Semantic accents */
+  --accent-primary:   #778873;
+  --accent-secondary: #A1BC98;
+  --accent-tertiary:  #DCCFC0;
+  --accent-highlight: #FDF6ED;
+
+  /* Shadows */
+  --shadow-sage:  0 4px 24px 0 rgba(119, 136, 115, 0.18);
+  --shadow-cream: 0 4px 24px 0 rgba(220, 207, 192, 0.35);
 }
 
+/* =========================================================
+   DARK MODE  —  deep charcoal forest with sage glow
+   Philosophy: very dark sage-tinted blacks, sage borders,
+   mint-sage text on dark surfaces
+   ========================================================= */
+.dark {
+  /* Core backgrounds */
+  --bg-base:       #0d1210;   /* near-black forest */
+  --bg-surface:    #141c16;   /* deep forest card */
+  --bg-muted:      #1a2420;   /* dark sage-tinted surface */
+  --bg-subtle:     #22302a;   /* hover state */
+  --bg-sage:       #1f2e24;   /* sage-tinged dark card */
+  --bg-sage-deep:  #263a2c;   /* featured panels */
+
+  /* Borders */
+  --border:        #2a3d30;   /* dark sage border */
+  --border-sage:   #3a5540;   /* sage green border */
+  --border-strong: #778873;   /* sage — prominent borders */
+
+  /* Text */
+  --text-primary:  #FDF6ED;   /* warm cream — headings */
+  --text-body:     #e0d8cc;   /* warm off-white — body */
+  --text-muted:    #A1BC98;   /* mint-sage — secondary */
+  --text-faint:    #6a8a67;   /* muted sage — hints */
+
+  /* Sage accents (same hues, luminosity-shifted for dark bg) */
+  --sage-50:  #1a2620;
+  --sage-100: #223020;
+  --sage-200: #2e4430;
+  --sage-300: #4a6648;
+  --sage-400: #628060;
+  --sage-500: #778873;
+  --sage-600: #A1BC98;   /* KEY accent on dark — mint sage */
+  --sage-700: #b8cfb3;
+  --sage-800: #DCCFC0;   /* warm sand as light accent */
+  --sage-900: #FDF6ED;
+
+  /* Warm sand — used as warm accent tones */
+  --sand-100: #1e1a16;
+  --sand-200: #2e2820;
+  --sand-300: #3e3630;
+  --sand-400: #DCCFC0;
+  --sand-500: #FDF6ED;
+
+  /* Zinc remaps — dark forest/sage palette */
+  --zinc-50:  #0d1210;
+  --zinc-100: #141c16;
+  --zinc-200: #1f2e24;
+  --zinc-300: #2a3d30;
+  --zinc-400: #3a5540;
+  --zinc-450: #4e6a52;
+  --zinc-500: #778873;
+  --zinc-600: #A1BC98;
+  --zinc-700: #c0d4bb;
+  --zinc-800: #DCCFC0;
+  --zinc-900: #FDF6ED;
+  --zinc-950: #0a0e0b;
+
+  /* Semantic accents */
+  --accent-primary:   #A1BC98;
+  --accent-secondary: #778873;
+  --accent-tertiary:  #DCCFC0;
+  --accent-highlight: #FDF6ED;
+
+  /* Shadows */
+  --shadow-sage:  0 4px 24px 0 rgba(161, 188, 152, 0.12);
+  --shadow-cream: 0 4px 24px 0 rgba(253, 246, 237, 0.06);
+}
+
+/* =========================================================
+   NIGHT MODE  —  deepest midnight with vivid sage/mint accent
+   Philosophy: very dark, almost black forest; mint-sage pops
+   strongly; warm sand for warm accent balance
+   ========================================================= */
+.night {
+  /* Core backgrounds */
+  --bg-base:       #080d09;   /* almost pure black — canvas */
+  --bg-surface:    #0e1610;   /* very dark forest — cards */
+  --bg-muted:      #131f16;   /* dark panel */
+  --bg-subtle:     #1a2a1e;   /* hover state */
+  --bg-sage:       #162018;   /* sage-tinged night card */
+  --bg-sage-deep:  #1e2e22;   /* featured panels */
+
+  /* Borders — sage-forward in night mode */
+  --border:        #223a28;   /* dark sage border */
+  --border-sage:   #3c6044;   /* vivid sage border */
+  --border-strong: #A1BC98;   /* mint-sage — prominent borders */
+
+  /* Text */
+  --text-primary:  #ffffff;   /* pure white — headings */
+  --text-body:     #e8f0e5;   /* sage-tinted white — body */
+  --text-muted:    #A1BC98;   /* mint-sage — secondary */
+  --text-faint:    #5a7e5c;   /* dim sage — hints */
+
+  /* Sage accents — maximally vibrant in night mode */
+  --sage-50:  #0f1810;
+  --sage-100: #152018;
+  --sage-200: #1e3025;
+  --sage-300: #2e5038;
+  --sage-400: #4e7855;
+  --sage-500: #778873;
+  --sage-600: #A1BC98;   /* KEY accent — mint sage */
+  --sage-700: #b8d4b2;
+  --sage-800: #DCCFC0;   /* warm sand balance */
+  --sage-900: #FDF6ED;
+
+  /* Warm sand — warm balance accent for night */
+  --sand-100: #12100d;
+  --sand-200: #1e1a16;
+  --sand-300: #DCCFC0;   /* pops warmly on night bg */
+  --sand-400: #FDF6ED;
+  --sand-500: #ffffff;
+
+  /* Zinc remaps — night deep forest/sage */
+  --zinc-50:  #080d09;
+  --zinc-100: #0e1610;
+  --zinc-200: #1a2a1e;
+  --zinc-300: #223a28;
+  --zinc-400: #3c6044;
+  --zinc-450: #5a7e5c;
+  --zinc-500: #A1BC98;   /* mint-sage as mid-tone in night */
+  --zinc-600: #b8d4b2;
+  --zinc-700: #DCCFC0;
+  --zinc-800: #e8e0d4;
+  --zinc-900: #FDF6ED;
+  --zinc-950: #040605;
+
+  /* Semantic accents */
+  --accent-primary:   #A1BC98;
+  --accent-secondary: #778873;
+  --accent-tertiary:  #DCCFC0;
+  --accent-highlight: #FDF6ED;
+
+  /* Shadows */
+  --shadow-sage:  0 4px 32px 0 rgba(161, 188, 152, 0.18);
+  --shadow-cream: 0 4px 24px 0 rgba(220, 207, 192, 0.08);
+}
+
+/* =========================================================
+   TAILWIND V4 THEME TOKEN MAPPING
+   ========================================================= */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Semantic colors → Tailwind utilities */
+  --color-background:  var(--bg-base);
+  --color-foreground:  var(--text-primary);
+  --font-sans:         var(--font-geist-sans);
+  --font-mono:         var(--font-geist-mono);
+
+  /* Zinc scale (now sage-tinted per mode) */
+  --color-zinc-50:   var(--zinc-50);
+  --color-zinc-100:  var(--zinc-100);
+  --color-zinc-200:  var(--zinc-200);
+  --color-zinc-300:  var(--zinc-300);
+  --color-zinc-400:  var(--zinc-400);
+  --color-zinc-450:  var(--zinc-450);
+  --color-zinc-500:  var(--zinc-500);
+  --color-zinc-600:  var(--zinc-600);
+  --color-zinc-700:  var(--zinc-700);
+  --color-zinc-800:  var(--zinc-800);
+  --color-zinc-900:  var(--zinc-900);
+  --color-zinc-950:  var(--zinc-950);
+
+  /* Sage scale exposed as emerald/teal/cyan (used in existing components) */
+  --color-emerald-50:  var(--sage-50);
+  --color-emerald-100: var(--sage-100);
+  --color-emerald-200: var(--sage-200);
+  --color-emerald-300: var(--sage-300);
+  --color-emerald-400: var(--sage-400);
+  --color-emerald-500: var(--sage-500);
+  --color-emerald-600: var(--sage-600);
+  --color-emerald-700: var(--sage-700);
+  --color-emerald-800: var(--sage-800);
+  --color-emerald-900: var(--sage-900);
+
+  --color-teal-400: var(--sage-300);
+  --color-teal-500: var(--sage-400);
+  --color-teal-600: var(--sage-500);
+
+  --color-cyan-400: var(--sage-300);
+  --color-cyan-500: var(--sage-500);
+  --color-cyan-600: var(--sage-600);
+
+  /* Indigo/Purple → sage-tinted for consistency */
+  --color-indigo-400: var(--sage-400);
+  --color-indigo-500: var(--sage-500);
+  --color-indigo-600: var(--sage-600);
+  --color-purple-400: var(--sage-400);
+  --color-purple-500: var(--sage-500);
+  --color-purple-600: var(--sage-600);
+
+  /* White / Black semantic swap per mode */
+  --color-white: var(--bg-surface);
+  --color-black: var(--text-primary);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* =========================================================
+   BASE BODY STYLES
+   ========================================================= */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-body);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+/* =========================================================
+   GLOBAL UTILITY CLASSES using CSS variables
+   (for components that hardcode Tailwind class values)
+   ========================================================= */
+
+/* Surfaces */
+.bg-surface   { background-color: var(--bg-surface); }
+.bg-muted     { background-color: var(--bg-muted); }
+.bg-subtle    { background-color: var(--bg-subtle); }
+.bg-sage-card { background-color: var(--bg-sage); }
+.bg-sage-deep { background-color: var(--bg-sage-deep); }
+
+/* Borders */
+.border-theme       { border-color: var(--border); }
+.border-theme-sage  { border-color: var(--border-sage); }
+.border-theme-strong{ border-color: var(--border-strong); }
+
+/* Text */
+.text-primary { color: var(--text-primary); }
+.text-body    { color: var(--text-body); }
+.text-muted   { color: var(--text-muted); }
+.text-faint   { color: var(--text-faint); }
+
+/* Accent Badges / Chips */
+.badge-sage {
+  background-color: var(--sage-200);
+  color: var(--sage-700);
+  border: 1px solid var(--sage-300);
+}
+.dark  .badge-sage,
+.night .badge-sage {
+  background-color: var(--sage-100);
+  color: var(--sage-600);
+  border-color: var(--sage-300);
+}
+
+/* Gradient accents using the brand palette */
+.gradient-sage {
+  background: linear-gradient(135deg, var(--sage-500) 0%, var(--sage-300) 100%);
+}
+.gradient-warm {
+  background: linear-gradient(135deg, var(--sand-300) 0%, var(--sage-200) 100%);
+}
+
+/* Glassy surface — works across all three modes */
+.glass-surface {
+  background-color: color-mix(in srgb, var(--bg-surface) 80%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+/* Sage glow shadow */
+.shadow-sage { box-shadow: var(--shadow-sage); }
+.shadow-cream { box-shadow: var(--shadow-cream); }
