@@ -51,7 +51,7 @@ export async function POST(request: Request) {
 
     // Check duplicate email
     const existingUser = await queryOne(
-      'SELECT id FROM auth.users WHERE LOWER(email) = LOWER($1)',
+      'SELECT id FROM public.users WHERE LOWER(email) = LOWER($1)',
       [email]
     );
     if (existingUser) {
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       if (!nationalId) throw new Error('National ID is required for clients');
 
       const existingProfile = await dbClient.query(
-        'SELECT id FROM public.profiles WHERE national_id = $1',
+        'SELECT id FROM public.users WHERE national_id = $1',
         [nationalId]
       );
       if (existingProfile.rows.length > 0) {
@@ -81,20 +81,10 @@ export async function POST(request: Request) {
         );
       }
 
-      const metaData = {
-        full_name_ar: fullNameAr,
-        full_name_en: fullNameEn || null,
-        role: 'client',
-        national_id: nationalId,
-        phone: phone || null,
-        wilaya_code: wilayaCode || null,
-        is_active: true,
-      };
-
       await dbClient.query(
-        `INSERT INTO auth.users (id, email, password_hash, raw_user_meta_data)
-         VALUES ($1, $2, $3, $4)`,
-        [userId, email, passwordHash, JSON.stringify(metaData)]
+        `INSERT INTO public.users (id, email, password_hash, role, is_active, full_name_ar, full_name_en, phone, wilaya_code, national_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        [userId, email, passwordHash, 'client', true, fullNameAr, fullNameEn || null, phone || null, wilayaCode || null, nationalId]
       );
 
       await dbClient.query('COMMIT');
@@ -142,21 +132,13 @@ export async function POST(request: Request) {
       await dbClient.query(
         `INSERT INTO public.companies (id, name_ar, name_en, code, license_number, headquarters_wilaya, email, is_active)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [companyId, companyNameAr, companyNameEn, companyCode.toUpperCase(), licenseNumber, headquartersWilaya || null, email, false]
+         [companyId, companyNameAr, companyNameEn, companyCode.toUpperCase(), licenseNumber, headquartersWilaya || null, email, false]
       );
 
-      const metaData = {
-        full_name_ar: fullNameAr,
-        full_name_en: fullNameEn || null,
-        role: 'company_admin',
-        company_id: companyId,
-        is_active: true,
-      };
-
       await dbClient.query(
-        `INSERT INTO auth.users (id, email, password_hash, raw_user_meta_data)
-         VALUES ($1, $2, $3, $4)`,
-        [userId, email, passwordHash, JSON.stringify(metaData)]
+        `INSERT INTO public.users (id, email, password_hash, role, is_active, full_name_ar, full_name_en, company_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [userId, email, passwordHash, 'company_admin', true, fullNameAr, fullNameEn || null, companyId]
       );
 
       await dbClient.query('COMMIT');
@@ -172,20 +154,10 @@ export async function POST(request: Request) {
     if (role === 'broker') {
       if (!brokerLicense) throw new Error('Broker license number is required');
 
-      const metaData = {
-        full_name_ar: fullNameAr,
-        full_name_en: fullNameEn || null,
-        role: 'broker',
-        broker_license: brokerLicense,
-        phone: phone || null,
-        wilaya_code: wilayaCode || null,
-        is_active: false,
-      };
-
       await dbClient.query(
-        `INSERT INTO auth.users (id, email, password_hash, raw_user_meta_data)
-         VALUES ($1, $2, $3, $4)`,
-        [userId, email, passwordHash, JSON.stringify(metaData)]
+        `INSERT INTO public.users (id, email, password_hash, role, is_active, full_name_ar, full_name_en, phone, wilaya_code, broker_license)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        [userId, email, passwordHash, 'broker', false, fullNameAr, fullNameEn || null, phone || null, wilayaCode || null, brokerLicense]
       );
 
       await dbClient.query('COMMIT');
@@ -201,21 +173,10 @@ export async function POST(request: Request) {
     if (role === 'assessor') {
       if (!assessorLicense) throw new Error('Assessor certification number is required');
 
-      const metaData = {
-        full_name_ar: fullNameAr,
-        full_name_en: fullNameEn || null,
-        role: 'assessor',
-        assessor_license: assessorLicense,
-        assessor_specialty: assessorSpecialty || null,
-        phone: phone || null,
-        wilaya_code: wilayaCode || null,
-        is_active: false,
-      };
-
       await dbClient.query(
-        `INSERT INTO auth.users (id, email, password_hash, raw_user_meta_data)
-         VALUES ($1, $2, $3, $4)`,
-        [userId, email, passwordHash, JSON.stringify(metaData)]
+        `INSERT INTO public.users (id, email, password_hash, role, is_active, full_name_ar, full_name_en, phone, wilaya_code, assessor_license, assessor_specialty)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        [userId, email, passwordHash, 'assessor', false, fullNameAr, fullNameEn || null, phone || null, wilayaCode || null, assessorLicense, assessorSpecialty || null]
       );
 
       await dbClient.query('COMMIT');

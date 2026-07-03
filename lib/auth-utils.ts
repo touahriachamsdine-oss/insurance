@@ -52,12 +52,11 @@ export async function getCurrentUser() {
     const payload = verifySession(token);
     if (!payload || !payload.id) return null;
 
-    // Fetch user and profile
+    // Fetch user details directly from public.users
     const user = await queryOne(
-      `SELECT u.id, u.email, p.role, p.company_id, p.full_name_ar, p.full_name_en, p.is_active
-       FROM auth.users u
-       JOIN public.profiles p ON u.id = p.id
-       WHERE u.id = $1`,
+      `SELECT id, email, role, company_id, full_name_ar, full_name_en, is_active
+       FROM public.users
+       WHERE id = $1`,
       [payload.id]
     );
     return user || null;

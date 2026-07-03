@@ -17,18 +17,10 @@ export async function POST(request: Request) {
 
     await dbClient.query('BEGIN');
 
-    // 1. Update public.profiles
+    // Update public.users
     await dbClient.query(
-      `UPDATE public.profiles
+      `UPDATE public.users
        SET is_active = $1, updated_at = NOW()
-       WHERE id = $2`,
-      [isActive, userId]
-    );
-
-    // 2. Update auth.users raw_user_meta_data
-    await dbClient.query(
-      `UPDATE auth.users
-       SET raw_user_meta_data = jsonb_set(raw_user_meta_data, '{is_active}', to_jsonb($1::boolean))
        WHERE id = $2`,
       [isActive, userId]
     );

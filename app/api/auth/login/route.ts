@@ -14,15 +14,23 @@ export async function POST(request: Request) {
       );
     }
 
-    // Fetch user, profile and company status in a single query
-    const user = await queryOne(
-      `SELECT u.id, u.email, u.password_hash, p.role, p.company_id, p.is_active, c.is_active as company_active
-       FROM auth.users u
-       JOIN public.profiles p ON u.id = p.id
-       LEFT JOIN public.companies c ON p.company_id = c.id
-       WHERE LOWER(u.email) = LOWER($1)`,
-      [email]
-    );
+    let user;
+    try {
+      // Fetch user and company status in a single query directly from public.users
+      user = await queryOne(
+        `SELECT u.id, u.email, u.password_hash, u.role, u.company_id, u.is_active, c.is_active as company_active
+         FROM public.users u
+         LEFT JOIN public.companies c ON u.company_id = c.id
+         WHERE LOWER(u.email) = LOWER($1)`,
+        [email]
+      );
+    } catch (dbErr: any) {
+      console.error('Database query failed during login:', dbErr);
+      return NextResponse.json(
+        { message: 'Database connection error. Please ensure DATABASE_URL is configured in your environment.' },
+        { status: 500 }
+      );
+    }
 
     if (!user) {
       return NextResponse.json(
