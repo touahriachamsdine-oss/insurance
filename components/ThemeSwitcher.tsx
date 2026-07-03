@@ -52,9 +52,9 @@ export default function ThemeSwitcher() {
         style={
           theme === 'light'
             ? {
-                backgroundColor: '#FDF6ED',
-                color: '#778873',
-                boxShadow: '0 1px 4px rgba(119,136,115,0.25)',
+                backgroundColor: 'var(--bg-surface)',
+                color: 'var(--text-primary)',
+                boxShadow: '0 1px 4px rgba(0, 0, 0, 0.12)',
                 transform: 'scale(1.1)',
               }
             : { color: 'var(--text-faint)' }
@@ -71,9 +71,9 @@ export default function ThemeSwitcher() {
         style={
           theme === 'dark'
             ? {
-                backgroundColor: '#1f2e24',
-                color: '#A1BC98',
-                boxShadow: '0 1px 6px rgba(161,188,152,0.20)',
+                backgroundColor: 'var(--bg-sage)',
+                color: 'var(--text-primary)',
+                boxShadow: '0 1px 6px rgba(0, 0, 0, 0.20)',
                 transform: 'scale(1.1)',
               }
             : { color: 'var(--text-faint)' }
@@ -90,9 +90,9 @@ export default function ThemeSwitcher() {
         style={
           theme === 'night'
             ? {
-                backgroundColor: '#162018',
-                color: '#A1BC98',
-                boxShadow: '0 1px 8px rgba(161,188,152,0.28)',
+                backgroundColor: 'var(--bg-sage-deep)',
+                color: 'var(--text-primary)',
+                boxShadow: '0 1px 8px rgba(0, 0, 0, 0.28)',
                 transform: 'scale(1.1)',
               }
             : { color: 'var(--text-faint)' }

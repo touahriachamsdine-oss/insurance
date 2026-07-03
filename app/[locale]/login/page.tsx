@@ -38,15 +38,17 @@ export default function LoginPage() {
         return;
       }
 
-      // Successful login - redirect to appropriate dashboard based on role
+      const roleRedirectMap: Record<string, string> = {
+        superadmin: '/admin',
+        company_admin: '/company',
+        company_agent: '/company',
+        broker: '/broker',
+        assessor: '/assessor',
+        client: '/client'
+      };
+
       const { role } = data.user;
-      if (role === 'superadmin') {
-        router.push('/admin');
-      } else if (role === 'company_admin' || role === 'company_agent') {
-        router.push('/company');
-      } else {
-        router.push('/client');
-      }
+      router.push(roleRedirectMap[role] || '/client');
     } catch (err: any) {
       console.error(err);
       setError(tAuth('errorOccurred'));

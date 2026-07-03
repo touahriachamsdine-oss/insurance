@@ -83,6 +83,14 @@ export default function AdminDashboardClient({
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
+  const activeTabSubtitle = activeTab === 'companies'
+    ? t('companyListSubtitle')
+    : t('professionalsListSubtitle');
+
+  const noRecordsMessage = activeTab === 'companies'
+    ? t('noCompanyRecords')
+    : t('noProfessionalRecords');
+
   // Statistics - Companies
   const totalCompanies = companies.length;
   const activeCompanies = companies.filter(c => c.is_active).length;
@@ -359,9 +367,7 @@ export default function AdminDashboardClient({
                 {activeTab === 'companies' ? t('companyList') : t('professionalsTab')}
               </h2>
               <p className="text-xs text-muted">
-                {activeTab === 'companies' 
-                  ? 'Manage and verify platform insurance providers' 
-                  : 'Approve or suspend brokers, assessors, and company agents'}
+                {activeTabSubtitle}
               </p>
             </div>
 
@@ -388,7 +394,7 @@ export default function AdminDashboardClient({
                       : 'text-zinc-500 hover:text-zinc-750 dark:hover:text-zinc-300'
                   }`}
                 >
-                  All
+                  {t('allFilter')}
                 </button>
                 <button
                   onClick={() => setStatusFilter('active')}
@@ -398,7 +404,7 @@ export default function AdminDashboardClient({
                       : 'text-zinc-500 hover:text-zinc-750 dark:hover:text-zinc-300'
                   }`}
                 >
-                  Active
+                  {t('activeFilter')}
                 </button>
                 <button
                   onClick={() => setStatusFilter('pending')}
@@ -408,7 +414,7 @@ export default function AdminDashboardClient({
                       : 'text-zinc-500 hover:text-zinc-750 dark:hover:text-zinc-300'
                   }`}
                 >
-                  Pending
+                  {t('pendingFilter')}
                 </button>
               </div>
             </div>
@@ -432,7 +438,7 @@ export default function AdminDashboardClient({
                   {filteredCompanies.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-6 py-12 text-center text-zinc-400">
-                        {statusFilter === 'pending' ? t('noPending') : 'No company records found matching your filters.'}
+                        {statusFilter === 'pending' ? t('noPending') : noRecordsMessage}
                       </td>
                     </tr>
                   ) : (
@@ -477,12 +483,12 @@ export default function AdminDashboardClient({
                           {c.is_active ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                              Active
+                              {t('verified')}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 animate-pulse">
                               <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                              Pending approval
+                              {t('pendingApproval')}
                             </span>
                           )}
                         </td>
@@ -576,12 +582,12 @@ export default function AdminDashboardClient({
                           {u.is_active ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                              Active
+                              {t('verified')}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 animate-pulse">
                               <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                              Pending
+                              {t('pendingApproval')}
                             </span>
                           )}
                         </td>

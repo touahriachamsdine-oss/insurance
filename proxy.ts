@@ -41,7 +41,9 @@ export default async function proxy(request: NextRequest) {
   const isProtectedAdmin = cleanPathname.startsWith('/admin');
   const isProtectedCompany = cleanPathname.startsWith('/company');
   const isProtectedClient = cleanPathname.startsWith('/client');
-  const isProtectedRoute = isProtectedAdmin || isProtectedCompany || isProtectedClient;
+  const isProtectedBroker = cleanPathname.startsWith('/broker');
+  const isProtectedAssessor = cleanPathname.startsWith('/assessor');
+  const isProtectedRoute = isProtectedAdmin || isProtectedCompany || isProtectedClient || isProtectedBroker || isProtectedAssessor;
 
   // 3. Auth route checks
   if (session) {
@@ -66,6 +68,16 @@ export default async function proxy(request: NextRequest) {
       const properDashboard = getDashboardPathForRole(session.role);
       return NextResponse.redirect(new URL(`/${locale}${properDashboard}`, request.url));
     }
+
+    if (isProtectedBroker && session.role !== 'broker') {
+      const properDashboard = getDashboardPathForRole(session.role);
+      return NextResponse.redirect(new URL(`/${locale}${properDashboard}`, request.url));
+    }
+
+    if (isProtectedAssessor && session.role !== 'assessor') {
+      const properDashboard = getDashboardPathForRole(session.role);
+      return NextResponse.redirect(new URL(`/${locale}${properDashboard}`, request.url));
+    }
   } else {
     // Unauthenticated user trying to access any protected dashboard
     if (isProtectedRoute) {
@@ -84,6 +96,10 @@ function getDashboardPathForRole(role: string): string {
     case 'company_admin':
     case 'company_agent':
       return '/company';
+    case 'broker':
+      return '/broker';
+    case 'assessor':
+      return '/assessor';
     case 'client':
     default:
       return '/client';

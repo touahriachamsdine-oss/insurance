@@ -17,66 +17,107 @@
 :root,
 .light {
   /* Core backgrounds */
-  --bg-base:       #FDF6ED;   /* warm cream — page canvas */
-  --bg-surface:    #f5ede0;   /* slightly deeper cream — cards, panels */
-  --bg-muted:      #eddfd0;   /* sand — muted sections */
-  --bg-subtle:     #e4d4c2;   /* darker sand — hover states */
-  --bg-sage:       #e8f0e5;   /* sage-tinted white — featured cards */
-  --bg-sage-deep:  #d6e8d2;   /* deeper sage — highlighted panels */
+  --bg-base:       #ece3d6;   /* warm earth — page canvas */
+  --bg-surface:    #d6c3ad;   /* raw clay — cards, panels */
+  --bg-muted:      #c7ae96;   /* toasted sand — muted sections */
+  --bg-subtle:     #b39c84;   /* aged clay — hover states */
+  --bg-sage:       #c1b49a;   /* soft olive — featured cards */
+  --bg-sage-deep:  #a89875;   /* deeper earth — highlighted panels */
 
   /* Borders */
-  --border:        #DCCFC0;   /* warm sand border */
-  --border-sage:   #b8d0b3;   /* sage green border */
-  --border-strong: #A1BC98;   /* mint-sage — prominent borders */
+  --border:        transparent;   /* borderless UI */
+  --border-sage:   transparent;   /* borderless */
+  --border-strong: transparent;   /* borderless */
 
   /* Text */
-  --text-primary:  #1e2a20;   /* deep forest — headings */
-  --text-body:     #3a4a3c;   /* dark sage — body text */
-  --text-muted:    #778873;   /* sage — muted/secondary text */
-  --text-faint:    #9aaa96;   /* light sage — placeholders, hints */
+  --text-primary:  #30291f;   /* dark earth — headings */
+  --text-body:     #453a2f;   /* warm soil — body text */
+  --text-muted:    #6f5f4f;   /* dried sage — secondary text */
+  --text-faint:    #8e806f;   /* soft taupe — placeholders/hints */
 
   /* Sage accents (primary brand color family) */
-  --sage-50:  #f2f7f1;
-  --sage-100: #e8f0e5;
-  --sage-200: #d0e3cb;
-  --sage-300: #A1BC98;   /* mint-sage — KEY accent */
-  --sage-400: #8aaa81;
-  --sage-500: #778873;   /* sage green — PRIMARY brand */
-  --sage-600: #627560;
-  --sage-700: #4e5f4c;
-  --sage-800: #3a4838;
-  --sage-900: #263026;
+  --sage-50:  #eee6da;
+  --sage-100: #ddd1bd;
+  --sage-200: #c0a885;
+  --sage-300: #a0835f;   /* warm olive — KEY accent */
+  --sage-400: #8e7a53;
+  --sage-500: #7a6a48;   /* earth olive — PRIMARY brand */
+  --sage-600: #66593c;
+  --sage-700: #4f4830;
+  --sage-800: #3c3425;
+  --sage-900: #2c241d;
 
   /* Warm sand */
-  --sand-100: #FDF6ED;
-  --sand-200: #f5ede0;
-  --sand-300: #DCCFC0;
-  --sand-400: #c8b8a5;
-  --sand-500: #b0998a;
+  --sand-100: #f4ebde;
+  --sand-200: #e3d4c0;
+  --sand-300: #cab39d;
+  --sand-400: #b49d84;
+  --sand-500: #9d846c;
 
-  /* Zinc remaps — now sage-tinted for light mode */
-  --zinc-50:  #FDF6ED;
-  --zinc-100: #f0e8db;
-  --zinc-200: #DCCFC0;
-  --zinc-300: #c5b5a4;
-  --zinc-400: #a0aa9c;
-  --zinc-450: #8a9e86;
-  --zinc-500: #778873;
-  --zinc-600: #627560;
-  --zinc-700: #4e5f4c;
-  --zinc-800: #3a4838;
-  --zinc-900: #263026;
-  --zinc-950: #141a15;
+  /* Zinc remaps — now earthy and warm */
+  --zinc-50:  #efe7dc;
+  --zinc-100: #e1d1c3;
+  --zinc-200: #c8b09d;
+  --zinc-300: #ac9683;
+  --zinc-400: #8f7e6c;
+  --zinc-450: #7f6f5f;
+  --zinc-500: #6e6254;
+  --zinc-600: #5a5044;
+  --zinc-700: #453f35;
+  --zinc-800: #332e27;
+  --zinc-900: #221e19;
+  --zinc-950: #14120f;
 
   /* Semantic accents */
-  --accent-primary:   #778873;
-  --accent-secondary: #A1BC98;
-  --accent-tertiary:  #DCCFC0;
-  --accent-highlight: #FDF6ED;
+  --accent-primary:   #7a6a48;
+  --accent-secondary: #8e7a53;
+  --accent-tertiary:  #cab39d;
+  --accent-highlight: #f4ebde;
 
   /* Shadows */
-  --shadow-sage:  0 4px 24px 0 rgba(119, 136, 115, 0.18);
-  --shadow-cream: 0 4px 24px 0 rgba(220, 207, 192, 0.35);
+  --shadow-sage:  0 18px 50px -28px rgba(60, 46, 30, 0.35);
+  --shadow-cream: 0 14px 40px -20px rgba(76, 54, 37, 0.25);
+}
+
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}
+
+.animate-drift {
+  animation: drift 12s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes drift {
+  0%, 100% {
+    transform: translateX(0px);
+  }
+  50% {
+    transform: translateX(14px);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.9s ease-out both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* =========================================================
@@ -86,66 +127,66 @@
    ========================================================= */
 .dark {
   /* Core backgrounds */
-  --bg-base:       #0d1210;   /* near-black forest */
-  --bg-surface:    #141c16;   /* deep forest card */
-  --bg-muted:      #1a2420;   /* dark sage-tinted surface */
-  --bg-subtle:     #22302a;   /* hover state */
-  --bg-sage:       #1f2e24;   /* sage-tinged dark card */
-  --bg-sage-deep:  #263a2c;   /* featured panels */
+  --bg-base:       #10120f;   /* charcoal earth — page canvas */
+  --bg-surface:    #1f211d;   /* dark clay — cards */
+  --bg-muted:      #2e302b;   /* deep moss — muted sections */
+  --bg-subtle:     #3a3c36;   /* soft shadow — hover states */
+  --bg-sage:       #34362f;   /* olive shadow — featured cards */
+  --bg-sage-deep:  #2b2d28;   /* deeper earth — highlighted panels */
 
   /* Borders */
-  --border:        #2a3d30;   /* dark sage border */
-  --border-sage:   #3a5540;   /* sage green border */
-  --border-strong: #778873;   /* sage — prominent borders */
+  --border:        transparent;
+  --border-sage:   transparent;
+  --border-strong: transparent;
 
   /* Text */
-  --text-primary:  #FDF6ED;   /* warm cream — headings */
-  --text-body:     #e0d8cc;   /* warm off-white — body */
-  --text-muted:    #A1BC98;   /* mint-sage — secondary */
-  --text-faint:    #6a8a67;   /* muted sage — hints */
+  --text-primary:  #ece2d6;   /* warm cream — headings */
+  --text-body:     #d8ccb9;   /* soft sand — body */
+  --text-muted:    #a99f88;   /* muted ochre — secondary */
+  --text-faint:    #7d745f;   /* dusk — hints */
 
   /* Sage accents (same hues, luminosity-shifted for dark bg) */
-  --sage-50:  #1a2620;
-  --sage-100: #223020;
-  --sage-200: #2e4430;
-  --sage-300: #4a6648;
-  --sage-400: #628060;
-  --sage-500: #778873;
-  --sage-600: #A1BC98;   /* KEY accent on dark — mint sage */
-  --sage-700: #b8cfb3;
-  --sage-800: #DCCFC0;   /* warm sand as light accent */
-  --sage-900: #FDF6ED;
+  --sage-50:  #232623;
+  --sage-100: #2d312d;
+  --sage-200: #3d443d;
+  --sage-300: #5a6458;
+  --sage-400: #767568;
+  --sage-500: #92867b;
+  --sage-600: #aea58b;
+  --sage-700: #c8b997;
+  --sage-800: #dbcdb3;
+  --sage-900: #f0e3c8;
 
   /* Warm sand — used as warm accent tones */
-  --sand-100: #1e1a16;
-  --sand-200: #2e2820;
-  --sand-300: #3e3630;
-  --sand-400: #DCCFC0;
-  --sand-500: #FDF6ED;
+  --sand-100: #1b1916;
+  --sand-200: #2d2a24;
+  --sand-300: #3f3b33;
+  --sand-400: #dbcdb3;
+  --sand-500: #f0e7d9;
 
-  /* Zinc remaps — dark forest/sage palette */
-  --zinc-50:  #0d1210;
-  --zinc-100: #141c16;
-  --zinc-200: #1f2e24;
-  --zinc-300: #2a3d30;
-  --zinc-400: #3a5540;
-  --zinc-450: #4e6a52;
-  --zinc-500: #778873;
-  --zinc-600: #A1BC98;
-  --zinc-700: #c0d4bb;
-  --zinc-800: #DCCFC0;
-  --zinc-900: #FDF6ED;
-  --zinc-950: #0a0e0b;
+  /* Zinc remaps — dark earth/moss palette */
+  --zinc-50:  #10120f;
+  --zinc-100: #1f211d;
+  --zinc-200: #292a26;
+  --zinc-300: #383a33;
+  --zinc-400: #4d4f47;
+  --zinc-450: #636356;
+  --zinc-500: #7c7b6d;
+  --zinc-600: #9a9685;
+  --zinc-700: #b8af9b;
+  --zinc-800: #d2c8b8;
+  --zinc-900: #ede4d4;
+  --zinc-950: #0a0c09;
 
   /* Semantic accents */
-  --accent-primary:   #A1BC98;
-  --accent-secondary: #778873;
-  --accent-tertiary:  #DCCFC0;
-  --accent-highlight: #FDF6ED;
+  --accent-primary:   #aea58b;
+  --accent-secondary: #92867b;
+  --accent-tertiary:  #dbcdb3;
+  --accent-highlight: #f0e7d9;
 
   /* Shadows */
-  --shadow-sage:  0 4px 24px 0 rgba(161, 188, 152, 0.12);
-  --shadow-cream: 0 4px 24px 0 rgba(253, 246, 237, 0.06);
+  --shadow-sage:  0 20px 60px -32px rgba(45, 40, 34, 0.35);
+  --shadow-cream: 0 16px 48px -24px rgba(82, 72, 60, 0.20);
 }
 
 /* =========================================================
@@ -155,66 +196,66 @@
    ========================================================= */
 .night {
   /* Core backgrounds */
-  --bg-base:       #080d09;   /* almost pure black — canvas */
-  --bg-surface:    #0e1610;   /* very dark forest — cards */
-  --bg-muted:      #131f16;   /* dark panel */
-  --bg-subtle:     #1a2a1e;   /* hover state */
-  --bg-sage:       #162018;   /* sage-tinged night card */
-  --bg-sage-deep:  #1e2e22;   /* featured panels */
+  --bg-base:       #060904;   /* deep night soil — canvas */
+  --bg-surface:    #111811;   /* midnight earth — cards */
+  --bg-muted:      #1c241d;   /* shadowed moss — muted */
+  --bg-subtle:     #283128;   /* soft leaf — hover */
+  --bg-sage:       #222b23;   /* olive night — featured cards */
+  --bg-sage-deep:  #1a231c;   /* deep soil — highlighted panels */
 
   /* Borders — sage-forward in night mode */
-  --border:        #223a28;   /* dark sage border */
-  --border-sage:   #3c6044;   /* vivid sage border */
-  --border-strong: #A1BC98;   /* mint-sage — prominent borders */
+  --border:        transparent;
+  --border-sage:   transparent;
+  --border-strong: transparent;
 
   /* Text */
-  --text-primary:  #ffffff;   /* pure white — headings */
-  --text-body:     #e8f0e5;   /* sage-tinted white — body */
-  --text-muted:    #A1BC98;   /* mint-sage — secondary */
-  --text-faint:    #5a7e5c;   /* dim sage — hints */
+  --text-primary:  #f6efe2;   /* warm cream — headings */
+  --text-body:     #dbd1c1;   /* dusted sand — body */
+  --text-muted:    #ab9f84;   /* subdued ochre — secondary */
+  --text-faint:    #776c59;   /* twilight — hints */
 
   /* Sage accents — maximally vibrant in night mode */
-  --sage-50:  #0f1810;
-  --sage-100: #152018;
-  --sage-200: #1e3025;
-  --sage-300: #2e5038;
-  --sage-400: #4e7855;
-  --sage-500: #778873;
-  --sage-600: #A1BC98;   /* KEY accent — mint sage */
-  --sage-700: #b8d4b2;
-  --sage-800: #DCCFC0;   /* warm sand balance */
-  --sage-900: #FDF6ED;
+  --sage-50:  #111810;
+  --sage-100: #172117;
+  --sage-200: #233026;
+  --sage-300: #3c4a3f;
+  --sage-400: #5c7054;
+  --sage-500: #7f8c6f;
+  --sage-600: #a1b08d;
+  --sage-700: #c1c6a8;
+  --sage-800: #ddcfba;
+  --sage-900: #f2e5ce;
 
   /* Warm sand — warm balance accent for night */
-  --sand-100: #12100d;
-  --sand-200: #1e1a16;
-  --sand-300: #DCCFC0;   /* pops warmly on night bg */
-  --sand-400: #FDF6ED;
-  --sand-500: #ffffff;
+  --sand-100: #0f0e0a;
+  --sand-200: #181612;
+  --sand-300: #d5c6ae;
+  --sand-400: #f2e7d6;
+  --sand-500: #fff8ed;
 
-  /* Zinc remaps — night deep forest/sage */
-  --zinc-50:  #080d09;
-  --zinc-100: #0e1610;
-  --zinc-200: #1a2a1e;
-  --zinc-300: #223a28;
-  --zinc-400: #3c6044;
-  --zinc-450: #5a7e5c;
-  --zinc-500: #A1BC98;   /* mint-sage as mid-tone in night */
-  --zinc-600: #b8d4b2;
-  --zinc-700: #DCCFC0;
-  --zinc-800: #e8e0d4;
-  --zinc-900: #FDF6ED;
-  --zinc-950: #040605;
+  /* Zinc remaps — night earth/moss palette */
+  --zinc-50:  #060904;
+  --zinc-100: #111811;
+  --zinc-200: #1a231d;
+  --zinc-300: #242e26;
+  --zinc-400: #3b4d3d;
+  --zinc-450: #5a725d;
+  --zinc-500: #8f9d7d;
+  --zinc-600: #b6bea1;
+  --zinc-700: #d9d2bf;
+  --zinc-800: #ece5d7;
+  --zinc-900: #f9f3e7;
+  --zinc-950: #030503;
 
   /* Semantic accents */
-  --accent-primary:   #A1BC98;
-  --accent-secondary: #778873;
-  --accent-tertiary:  #DCCFC0;
-  --accent-highlight: #FDF6ED;
+  --accent-primary:   #a1b08d;
+  --accent-secondary: #7f8c6f;
+  --accent-tertiary:  #ddcfba;
+  --accent-highlight: #f2e7d6;
 
   /* Shadows */
-  --shadow-sage:  0 4px 32px 0 rgba(161, 188, 152, 0.18);
-  --shadow-cream: 0 4px 24px 0 rgba(220, 207, 192, 0.08);
+  --shadow-sage:  0 24px 70px -40px rgba(38, 32, 24, 0.40);
+  --shadow-cream: 0 18px 54px -28px rgba(75, 65, 52, 0.24);
 }
 
 /* =========================================================
@@ -224,8 +265,8 @@
   /* Semantic colors → Tailwind utilities */
   --color-background:  var(--bg-base);
   --color-foreground:  var(--text-primary);
-  --font-sans:         var(--font-geist-sans);
-  --font-mono:         var(--font-geist-mono);
+  --font-sans:         var(--font-cairo);
+  --font-mono:         var(--font-inter);
 
   /* Zinc scale (now sage-tinted per mode) */
   --color-zinc-50:   var(--zinc-50);
@@ -275,13 +316,147 @@
 }
 
 /* =========================================================
+   DARK/NIGHT MODE READABILITY OVERRIDES
+   ========================================================= */
+.dark [class*="text-[#33452e]"],
+.dark [class*="text-[#6f7b67]"],
+.dark [class*="text-[#778873]"],
+.dark [class*="text-[#A1BC98]"],
+.dark [class*="text-[#DCCFC0]"],
+.night [class*="text-[#33452e]"],
+.night [class*="text-[#6f7b67]"],
+.night [class*="text-[#778873]"],
+.night [class*="text-[#A1BC98]"],
+.night [class*="text-[#DCCFC0]"] {
+  color: var(--text-body) !important;
+}
+
+.dark [class*="bg-[#FDF6ED]"],
+.dark [class*="bg-[#fffaf3]"],
+.dark [class*="bg-[#F8FAF3]"],
+.dark [class*="bg-[#FDF6ED]/"],
+.dark [class*="bg-[#fffaf3]/"],
+.dark [class*="bg-[#F8FAF3]/"],
+.night [class*="bg-[#FDF6ED]"],
+.night [class*="bg-[#fffaf3]"],
+.night [class*="bg-[#F8FAF3]"],
+.night [class*="bg-[#FDF6ED]/"],
+.night [class*="bg-[#fffaf3]/"],
+.night [class*="bg-[#F8FAF3]/"] {
+  background-color: var(--bg-surface) !important;
+}
+
+.dark [class*="border-[#DCCFC0]"],
+.night [class*="border-[#DCCFC0]"] {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.dark [class*="shadow-[#778873]"],
+.dark [class*="shadow-[#A1BC98]"],
+.dark [class*="shadow-[#DCCFC0]"],
+.night [class*="shadow-[#778873]"],
+.night [class*="shadow-[#A1BC98]"],
+.night [class*="shadow-[#DCCFC0]"] {
+  box-shadow: 0 20px 50px -30px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Core page body defaults for dark/night mode */
+.dark body,
+.night body {
+  background-color: var(--bg-base) !important;
+  color: var(--text-body) !important;
+}
+
+/* =========================================================
    BASE BODY STYLES
    ========================================================= */
 body {
   background-color: var(--bg-base);
   color: var(--text-body);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: var(--font-cairo), var(--font-inter), Arial, Helvetica, sans-serif;
+  transition: background-color 0.35s ease, color 0.35s ease, transform 0.35s ease;
+  min-height: 100vh;
+}
+
+:root {
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes drift {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(-6px) translateX(4px); }
+}
+
+@keyframes slow-fade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.92; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.08); }
+  50% { box-shadow: 0 0 32px 0 rgba(255, 255, 255, 0.08); }
+}
+
+.motion-safe .animate-drift,
+.animate-drift {
+  animation: drift 10s var(--motion-ease) infinite;
+}
+
+.motion-safe .animate-soft-pulse,
+.animate-soft-pulse {
+  animation: slow-fade 8s var(--motion-ease) infinite;
+}
+
+.motion-safe .animate-glow,
+.animate-glow {
+  animation: glow-pulse 6s var(--motion-ease) infinite;
+}
+
+[class*="border-"] {
+  border-color: transparent !important;
+  border-width: 0 !important;
+}
+
+[style*="border:"] {
+  border-color: transparent !important;
+  border-width: 0 !important;
+}
+
+.dark input,
+.dark textarea,
+.dark select,
+.dark button,
+.night input,
+.night textarea,
+.night select,
+.night button {
+  color: var(--text-body) !important;
+  background-color: var(--bg-surface) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder,
+.night input::placeholder,
+.night textarea::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* Ensure forms and focused elements keep visual contrast without borders */
+input,
+textarea,
+button,
+select {
+  border: none !important;
+}
+
+button:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.18);
+  outline-offset: 2px;
+}
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
 }
 
 /* =========================================================

@@ -120,11 +120,14 @@ export default async function CompanyDashboardPage() {
   );
 
   const clients = await query(
-    `SELECT p.id, p.full_name_ar, p.full_name_en, u.email, p.phone 
+    `SELECT DISTINCT p.id, p.full_name_ar, p.full_name_en, u.email, p.phone
      FROM public.profiles p
      JOIN auth.users u ON p.id = u.id
-     WHERE p.role = 'client' 
-     ORDER BY p.full_name_en ASC`
+     JOIN public.contracts c ON c.client_id = p.id
+     WHERE p.role = 'client'
+       AND c.company_id = $1
+     ORDER BY p.full_name_en ASC`,
+    [user.company_id]
   );
 
   return (
