@@ -14,12 +14,11 @@ export default async function AssessorDashboardPage() {
     `SELECT cl.id, cl.claim_number, cl.status, cl.incident_date::text AS incident_date, cl.claimed_amount::text AS claimed_amount,
             cl.description, cl.estimated_amount::text AS estimated_amount, cl.submitted_at::text AS submitted_at,
             c.contract_number, comp.name_ar AS company_name_ar, comp.name_en AS company_name_en,
-            p.full_name_ar AS client_name_ar, p.full_name_en AS client_name_en, u.email AS client_email
+            p.full_name_ar AS client_name_ar, p.full_name_en AS client_name_en, p.email AS client_email
      FROM public.claims cl
      JOIN public.contracts c ON cl.contract_id = c.id
      JOIN public.companies comp ON cl.company_id = comp.id
-     JOIN public.profiles p ON cl.client_id = p.id
-     JOIN auth.users u ON p.id = u.id
+     JOIN public.users p ON cl.client_id = p.id
      WHERE cl.assessor_id = $1
      ORDER BY cl.submitted_at DESC`,
     [user.id]

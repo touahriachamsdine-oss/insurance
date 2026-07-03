@@ -54,11 +54,10 @@ export default async function BrokerDashboardPage() {
        p.id AS client_id,
        p.full_name_ar AS client_name_ar,
        p.full_name_en AS client_name_en,
-       u.email AS client_email,
+       p.email AS client_email,
        p.phone AS client_phone
      FROM public.contracts c
-     JOIN public.profiles p ON c.client_id = p.id
-     JOIN auth.users u ON p.id = u.id
+     JOIN public.users p ON c.client_id = p.id
      WHERE c.agent_id = $1 AND c.company_id = $2
      ORDER BY c.created_at DESC
      LIMIT 12`,
@@ -70,10 +69,9 @@ export default async function BrokerDashboardPage() {
        p.id,
        p.full_name_ar,
        p.full_name_en,
-       u.email,
+       p.email,
        p.phone
-     FROM public.profiles p
-     JOIN auth.users u ON p.id = u.id
+     FROM public.users p
      JOIN public.contracts c ON c.client_id = p.id
      WHERE c.agent_id = $1 AND c.company_id = $2
      ORDER BY p.full_name_en ASC`,

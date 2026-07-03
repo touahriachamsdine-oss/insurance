@@ -51,11 +51,10 @@ export default async function CompanyDashboardPage() {
        c.created_at::text as created_at,
        p.full_name_ar as client_name_ar,
        p.full_name_en as client_name_en,
-       u.email as client_email,
+       p.email as client_email,
        p.phone as client_phone
      FROM public.contracts c
-     JOIN public.profiles p ON c.client_id = p.id
-     JOIN auth.users u ON p.id = u.id
+     JOIN public.users p ON c.client_id = p.id
      WHERE c.company_id = $1
      ORDER BY c.created_at DESC`,
     [user.company_id]
@@ -78,12 +77,11 @@ export default async function CompanyDashboardPage() {
        cl.submitted_at::text as created_at,
        p.full_name_ar as client_name_ar,
        p.full_name_en as client_name_en,
-       u.email as client_email,
+       p.email as client_email,
        con.contract_number,
        cl.documents
      FROM public.claims cl
-     JOIN public.profiles p ON cl.client_id = p.id
-     JOIN auth.users u ON p.id = u.id
+     JOIN public.users p ON cl.client_id = p.id
      JOIN public.contracts con ON cl.contract_id = con.id
      WHERE cl.company_id = $1
      ORDER BY cl.submitted_at DESC`,
@@ -110,7 +108,7 @@ export default async function CompanyDashboardPage() {
        c_to.name_en as to_name_en,
        con.contract_number
      FROM public.transfer_requests t
-     JOIN public.profiles p ON t.client_id = p.id
+     JOIN public.users p ON t.client_id = p.id
      JOIN public.companies c_from ON t.from_company_id = c_from.id
      JOIN public.companies c_to ON t.to_company_id = c_to.id
      JOIN public.contracts con ON t.contract_id = con.id
@@ -120,9 +118,8 @@ export default async function CompanyDashboardPage() {
   );
 
   const clients = await query(
-    `SELECT DISTINCT p.id, p.full_name_ar, p.full_name_en, u.email, p.phone
-     FROM public.profiles p
-     JOIN auth.users u ON p.id = u.id
+    `SELECT DISTINCT p.id, p.full_name_ar, p.full_name_en, p.email, p.phone
+     FROM public.users p
      JOIN public.contracts c ON c.client_id = p.id
      WHERE p.role = 'client'
        AND c.company_id = $1

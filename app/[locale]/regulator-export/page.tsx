@@ -35,7 +35,7 @@ export default async function RegulatorExportDashboardPage() {
      FROM public.companies comp
      LEFT JOIN public.contracts con ON con.company_id = comp.id
      LEFT JOIN public.claims cl ON cl.company_id = comp.id
-     LEFT JOIN public.profiles p ON p.company_id = comp.id AND p.role = 'client'
+     LEFT JOIN public.users p ON p.company_id = comp.id AND p.role = 'client'
      WHERE comp.id = $1`,
     [companyId]
   );

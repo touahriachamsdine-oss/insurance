@@ -14,16 +14,15 @@ export default async function AgentNetworkDashboardPage() {
 
   // Get agents under this company
   const agents = await query(
-    `SELECT p.id, p.full_name_ar, p.full_name_en, u.email, p.phone, p.wilaya,
+    `SELECT p.id, p.full_name_ar, p.full_name_en, p.email, p.phone, COALESCE(p.wilaya_code, p.agent_wilaya) as wilaya,
             COUNT(DISTINCT c.id) as client_count,
             COUNT(DISTINCT con.id) as policy_count,
             SUM(COALESCE(con.monthly_premium::numeric, 0)) as total_premium
-     FROM public.profiles p
-     JOIN auth.users u ON p.id = u.id
+     FROM public.users p
      LEFT JOIN public.contracts con ON con.agent_id = p.id
-     LEFT JOIN public.profiles c ON c.id = con.client_id
+     LEFT JOIN public.users c ON c.id = con.client_id
      WHERE p.company_id = $1 AND p.role IN ('company_agent', 'broker')
-     GROUP BY p.id, p.full_name_ar, p.full_name_en, u.email, p.phone, p.wilaya
+     GROUP BY p.id, p.full_name_ar, p.full_name_en, p.email, p.phone, p.wilaya_code, p.agent_wilaya
      ORDER BY total_premium DESC`,
     [companyId]
   );
@@ -34,7 +33,7 @@ export default async function AgentNetworkDashboardPage() {
             lh.notes, lh.created_at::text as created_at,
             p.full_name_ar as agent_name_ar, p.full_name_en as agent_name_en
      FROM lead_handoffs lh
-     JOIN public.profiles p ON lh.agent_id = p.id
+     JOIN public.users p ON lh.agent_id = p.id
      WHERE lh.company_id = $1 AND lh.status = 'pending'
      ORDER BY lh.created_at DESC`,
     [companyId]

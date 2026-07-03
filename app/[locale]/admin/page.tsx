@@ -40,15 +40,14 @@ export default async function AdminDashboardPage() {
        p.is_active,
        p.phone,
        p.wilaya_code,
-       u.email,
-       u.raw_user_meta_data->>'broker_license' as broker_license,
-       u.raw_user_meta_data->>'assessor_license' as assessor_license,
-       u.raw_user_meta_data->>'assessor_specialty' as assessor_specialty,
+       p.email,
+       p.broker_license,
+       p.assessor_license,
+       p.assessor_specialty,
        c.name_ar as company_name_ar,
        c.name_en as company_name_en,
        p.created_at::text
-     FROM public.profiles p
-     JOIN auth.users u ON p.id = u.id
+     FROM public.users p
      LEFT JOIN public.companies c ON p.company_id = c.id
      WHERE p.role IN ('broker', 'assessor', 'company_agent')
      ORDER BY p.created_at DESC`
