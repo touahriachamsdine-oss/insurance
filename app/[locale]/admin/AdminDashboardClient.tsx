@@ -756,7 +756,7 @@ export default function AdminDashboardClient({
                           borderRadius: '12px',
                           color: '#fff' 
                         }}
-                        formatter={(value: number | string) => [`${Number(value).toLocaleString()} DZD`]}
+                        formatter={(value) => [`${Number(value).toLocaleString()} DZD`]}
                       />
                       <Legend verticalAlign="top" height={36} iconType="circle" />
                       <Area 
@@ -810,7 +810,7 @@ export default function AdminDashboardClient({
                           borderRadius: '12px',
                           color: '#fff' 
                         }}
-                        formatter={(value: number | string) => [`${Number(value).toLocaleString()} DZD`]}
+                        formatter={(value) => [`${Number(value).toLocaleString()} DZD`]}
                       />
                       <Legend verticalAlign="top" height={36} iconType="circle" />
                       <Area 
