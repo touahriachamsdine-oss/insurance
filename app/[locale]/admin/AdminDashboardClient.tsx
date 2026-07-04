@@ -660,7 +660,7 @@ export default function AdminDashboardClient({
                                 </span>
                                 {u.assessor_specialty && (
                                   <span className="text-[10px] text-zinc-400 block font-semibold">
-                                    Specialty: {tRegister(`specialty${u.assessor_specialty.charAt(0).toUpperCase() + u.assessor_specialty.slice(1)}`)}
+                                    Specialty: {u.assessor_specialty.charAt(0).toUpperCase() + u.assessor_specialty.slice(1)}
                                   </span>
                                 )}
                               </div>
