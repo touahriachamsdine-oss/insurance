@@ -10,6 +10,7 @@ export default async function ClientDashboardPage() {
     redirect('/login');
   }
 
+  // Get active contracts for the client
   const contracts = await query(
     `SELECT
        c.id,
@@ -22,7 +23,8 @@ export default async function ClientDashboardPage() {
        c.start_date::text AS start_date,
        c.end_date::text AS end_date,
        comp.name_ar AS company_name_ar,
-       comp.name_en AS company_name_en
+       comp.name_en AS company_name_en,
+       c.data
      FROM public.contracts c
      JOIN public.companies comp ON c.company_id = comp.id
      WHERE c.client_id = $1
@@ -30,6 +32,7 @@ export default async function ClientDashboardPage() {
     [user.id]
   );
 
+  // Get active claims for the client
   const claims = await query(
     `SELECT
        cl.id,
@@ -41,13 +44,22 @@ export default async function ClientDashboardPage() {
        cl.submitted_at::text AS submitted_at,
        c.contract_number AS policy_number,
        comp.name_ar AS company_name_ar,
-       comp.name_en AS company_name_en
+       comp.name_en AS company_name_en,
+       cl.description,
+       cl.documents
      FROM public.claims cl
      JOIN public.contracts c ON cl.contract_id = c.id
      JOIN public.companies comp ON cl.company_id = comp.id
      WHERE cl.client_id = $1
      ORDER BY cl.submitted_at DESC`,
     [user.id]
+  );
+
+  // Get list of all available insurance companies
+  const companies = await query(
+    `SELECT id, name_ar, name_en, code 
+     FROM public.companies 
+     ORDER BY name_en ASC`
   );
 
   return (
@@ -61,6 +73,8 @@ export default async function ClientDashboardPage() {
       }}
       contracts={contracts}
       claims={claims}
+      companies={companies}
     />
   );
 }
+

@@ -32,8 +32,13 @@ import {
   Bell,
   Eye,
   Download,
+  Upload,
   Printer,
-  CreditCard
+  CreditCard,
+  Mail,
+  Hash,
+  Edit3,
+  Trash2
 } from 'lucide-react';
 
 import {
@@ -81,6 +86,8 @@ interface Contract {
   client_name_en: string;
   client_email: string;
   client_phone: string;
+  client_national_id?: string | null;
+  client_wilaya_code?: string | null;
 }
 
 interface Claim {
@@ -128,6 +135,9 @@ interface ClientUser {
   full_name_en: string;
   email: string;
   phone: string;
+  national_id?: string | null;
+  wilaya_code?: string | null;
+  is_active?: boolean | null;
 }
 
 interface CompanyDashboardClientProps {
@@ -178,10 +188,53 @@ export default function CompanyDashboardClient({
     initialClaims.map(c => c.status === 'submitted' || c.status === 'under_review' ? { ...c, status: 'pending' } : c)
   );
   const [transfers, setTransfers] = useState<TransferRequest[]>(initialTransfers);
+  const [companyClients, setCompanyClients] = useState<ClientUser[]>(clients);
 
-  const [activeTab, setActiveTab] = useState<'contracts' | 'claims' | 'transfers' | 'analytics'>('contracts');
+  const [activeTab, setActiveTab] = useState<'contracts' | 'claims' | 'transfers' | 'analytics' | 'clients'>('contracts');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+
+  // Create Client User Modal State
+  const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+  const [createUserEmail, setCreateUserEmail] = useState('');
+  const [createUserFullNameAr, setCreateUserFullNameAr] = useState('');
+  const [createUserFullNameEn, setCreateUserFullNameEn] = useState('');
+  const [createUserPhone, setCreateUserPhone] = useState('');
+  const [createUserNationalId, setCreateUserNationalId] = useState('');
+  const [createUserWilayaCode, setCreateUserWilayaCode] = useState('');
+  const [createUserPassword, setCreateUserPassword] = useState('');
+  const [createUserLoading, setCreateUserLoading] = useState(false);
+  const [createUserError, setCreateUserError] = useState<string | null>(null);
+  const [createUserSuccess, setCreateUserSuccess] = useState(false);
+
+  // Import Database (CSV) Modal State
+  const [isImportUserModalOpen, setIsImportUserModalOpen] = useState(false);
+  const [csvText, setCsvText] = useState('');
+  const [importLoading, setImportLoading] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importSuccess, setImportSuccess] = useState<string | null>(null);
+  const [importValidationErrors, setImportValidationErrors] = useState<string[]>([]);
+  const [csvPreviewMode, setCsvPreviewMode] = useState(false);
+  const [parsedCsvPreviewRows, setParsedCsvPreviewRows] = useState<any[]>([]);
+
+  // Edit Client User Modal State
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
+  const [editUserId, setEditUserId] = useState('');
+  const [editUserEmail, setEditUserEmail] = useState('');
+  const [editUserFullNameAr, setEditUserFullNameAr] = useState('');
+  const [editUserFullNameEn, setEditUserFullNameEn] = useState('');
+  const [editUserPhone, setEditUserPhone] = useState('');
+  const [editUserNationalId, setEditUserNationalId] = useState('');
+  const [editUserWilayaCode, setEditUserWilayaCode] = useState('');
+  const [editUserPassword, setEditUserPassword] = useState('');
+  const [editUserLoading, setEditUserLoading] = useState(false);
+  const [editUserError, setEditUserError] = useState<string | null>(null);
+  const [editUserSuccess, setEditUserSuccess] = useState(false);
+
+  // Delete Client User State
+  const [isDeleteUserModalOpen, setIsDeleteUserModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<ClientUser | null>(null);
+  const [deleteUserLoading, setDeleteUserLoading] = useState(false);
   
   // Live Notifications State
   const [liveNotifications, setLiveNotifications] = useState<any[]>([
@@ -590,6 +643,492 @@ export default function CompanyDashboardClient({
     }
   };
 
+  // Create Individual Client User
+  const handleCreateUserSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreateUserLoading(true);
+    setCreateUserError(null);
+    setCreateUserSuccess(false);
+
+    try {
+      const response = await fetch('/api/company/users/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: createUserEmail,
+          fullNameAr: createUserFullNameAr,
+          fullNameEn: createUserFullNameEn || undefined,
+          phone: createUserPhone || undefined,
+          nationalId: createUserNationalId,
+          wilayaCode: createUserWilayaCode || undefined,
+          password: createUserPassword,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create user account');
+      }
+
+      setCreateUserSuccess(true);
+      
+      // Update clients list locally to immediately show the new user
+      if (data.user) {
+        const newClient: ClientUser = {
+          id: data.user.id,
+          full_name_ar: data.user.fullNameAr || createUserFullNameAr,
+          full_name_en: data.user.fullNameEn || createUserFullNameEn,
+          email: data.user.email || createUserEmail,
+          phone: data.user.phone || createUserPhone,
+          national_id: data.user.nationalId || createUserNationalId,
+          wilaya_code: data.user.wilayaCode || createUserWilayaCode
+        };
+        setCompanyClients(prev => [newClient, ...prev]);
+      }
+
+      // Reset fields
+      setCreateUserEmail('');
+      setCreateUserFullNameAr('');
+      setCreateUserFullNameEn('');
+      setCreateUserPhone('');
+      setCreateUserNationalId('');
+      setCreateUserWilayaCode('');
+      setCreateUserPassword('');
+
+      // Display success feedback
+      setNotification({
+        type: 'success',
+        message: isRtl ? 'تم إنشاء العميل بنجاح!' : 'Client account created successfully!'
+      });
+
+      // Close modal after delay
+      setTimeout(() => {
+        setIsCreateUserModalOpen(false);
+        setCreateUserSuccess(false);
+      }, 1500);
+
+    } catch (err: any) {
+      setCreateUserError(err.message || 'Failed to create user');
+    } finally {
+      setCreateUserLoading(false);
+    }
+  };
+
+  // Import Database (CSV) Submit (Preview & Validation Mode)
+  const handleCSVImportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!csvText.trim()) return;
+
+    setImportLoading(true);
+    setImportError(null);
+    setImportSuccess(null);
+    setImportValidationErrors([]);
+
+    const lines = csvText.split(/\r?\n/);
+    if (lines.length <= 1) {
+      setImportError(isRtl ? 'ملف الـ CSV فارغ أو لا يحتوي على صفوف بيانات' : 'CSV text is empty or missing data rows');
+      setImportLoading(false);
+      return;
+    }
+
+    const splitCSVLine = (line: string) => {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    };
+
+    const headers = splitCSVLine(lines[0]);
+    const headerKeys = headers.map(h => h.replace(/^["']|["']$/g, '').trim());
+
+    // Check for required headers
+    const requiredHeaders = ['email', 'fullNameAr', 'nationalId'];
+    const missingHeaders = requiredHeaders.filter(h => !headerKeys.includes(h));
+    if (missingHeaders.length > 0) {
+      setImportError(
+        (isRtl ? 'الأعمدة المطلوبة مفقودة: ' : 'Missing required headers: ') + 
+        missingHeaders.join(', ')
+      );
+      setImportLoading(false);
+      return;
+    }
+
+    const previewRows: any[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const values = splitCSVLine(line);
+      const rowObj: any = {};
+
+      headerKeys.forEach((key, index) => {
+        let val = values[index] || '';
+        val = val.replace(/^["']|["']$/g, '').trim();
+        if (val) {
+          rowObj[key] = val;
+        }
+      });
+
+      const rowNum = i + 1;
+      const warnings: string[] = [];
+      let hasError = false;
+
+      // Local validations for warnings / errors
+      if (!rowObj.email) {
+        warnings.push(isRtl ? 'البريد الإلكتروني مطلوب' : 'Email is required');
+        hasError = true;
+      } else if (!/\S+@\S+\.\S+/.test(rowObj.email)) {
+        warnings.push(isRtl ? 'البريد الإلكتروني غير صالح' : 'Email format is invalid');
+      }
+
+      if (!rowObj.fullNameAr) {
+        warnings.push(isRtl ? 'الاسم بالعربية مطلوب' : 'Arabic name is required');
+        hasError = true;
+      }
+
+      if (!rowObj.nationalId) {
+        warnings.push(isRtl ? 'رقم التعريف الوطني مطلوب' : 'National ID is required');
+        hasError = true;
+      } else if (rowObj.nationalId.length !== 18) {
+        warnings.push(
+          isRtl 
+            ? 'رقم التعريف الوطني يجب أن يتكون من 18 رقماً' 
+            : 'National ID should be exactly 18 digits'
+        );
+      }
+
+      // Convert numbers
+      if (rowObj.coverageAmount) rowObj.coverageAmount = parseFloat(rowObj.coverageAmount);
+      if (rowObj.monthlyPremium) rowObj.monthlyPremium = parseFloat(rowObj.monthlyPremium);
+      if (rowObj.deductible) rowObj.deductible = parseFloat(rowObj.deductible);
+      if (rowObj.beneficiariesCount) rowObj.beneficiariesCount = parseInt(rowObj.beneficiariesCount, 10);
+      if (rowObj.vehicleYear) rowObj.vehicleYear = parseInt(rowObj.vehicleYear, 10);
+      if (rowObj.propertyAreaSqm) rowObj.propertyAreaSqm = parseFloat(rowObj.propertyAreaSqm);
+
+      previewRows.push({
+        ...rowObj,
+        rowNum,
+        warnings,
+        hasError
+      });
+    }
+
+    setParsedCsvPreviewRows(previewRows);
+    setCsvPreviewMode(true);
+    setImportLoading(false);
+  };
+
+  // CSV Import Confirmation
+  const handleCSVImportConfirm = async () => {
+    setImportLoading(true);
+    setImportError(null);
+    setImportSuccess(null);
+
+    const validRows = parsedCsvPreviewRows.filter(r => !r.hasError);
+    if (validRows.length === 0) {
+      setImportError(isRtl ? 'لا توجد صفوف صالحة للاستيراد' : 'No valid rows to import');
+      setImportLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/company/users/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rows: validRows }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to import CSV database');
+      }
+
+      const importedCount = data.importedCount || 0;
+      const contractsCount = data.contractsCreatedCount || 0;
+
+      setImportSuccess(
+        isRtl 
+          ? `تم استيراد ${importedCount} مستخدم و ${contractsCount} بوليصة تأمين بنجاح!` 
+          : `Successfully imported ${importedCount} users and created ${contractsCount} policies!`
+      );
+
+      router.refresh();
+
+      if (data.users && Array.isArray(data.users)) {
+        const newClients: ClientUser[] = data.users.map((u: any) => ({
+          id: u.id,
+          full_name_ar: u.fullNameAr,
+          full_name_en: u.fullNameEn || '',
+          email: u.email,
+          phone: u.phone || '',
+          national_id: u.nationalId,
+          wilaya_code: u.wilayaCode || '',
+          is_active: true
+        }));
+        setCompanyClients(prev => [...newClients, ...prev]);
+      }
+
+      setCsvText('');
+      setParsedCsvPreviewRows([]);
+      setCsvPreviewMode(false);
+
+      setNotification({
+        type: 'success',
+        message: isRtl ? 'اكتمل استيراد قاعدة البيانات!' : 'Database import completed successfully!'
+      });
+
+      setTimeout(() => {
+        setIsImportUserModalOpen(false);
+        setImportSuccess(null);
+      }, 1500);
+
+    } catch (err: any) {
+      setImportError(err.message || 'Error occurred during import');
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  // Edit Client User Submit
+  const handleEditUserSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEditUserLoading(true);
+    setEditUserError(null);
+    setEditUserSuccess(false);
+
+    try {
+      const response = await fetch('/api/company/users/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: editUserId,
+          email: editUserEmail,
+          fullNameAr: editUserFullNameAr,
+          fullNameEn: editUserFullNameEn || undefined,
+          phone: editUserPhone || undefined,
+          wilayaCode: editUserWilayaCode || undefined,
+          password: editUserPassword || undefined
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to update user account');
+      }
+
+      setEditUserSuccess(true);
+
+      // Update local clients state immediately
+      setCompanyClients(prev =>
+        prev.map(c =>
+          c.id === editUserId
+            ? {
+                ...c,
+                email: editUserEmail,
+                full_name_ar: editUserFullNameAr,
+                full_name_en: editUserFullNameEn,
+                phone: editUserPhone,
+                wilaya_code: editUserWilayaCode
+              }
+            : c
+        )
+      );
+
+      setNotification({
+        type: 'success',
+        message: isRtl ? 'تم تحديث حساب العميل بنجاح!' : 'Client account updated successfully!'
+      });
+
+      setTimeout(() => {
+        setIsEditUserModalOpen(false);
+        setEditUserSuccess(false);
+        // Reset fields
+        setEditUserId('');
+        setEditUserEmail('');
+        setEditUserFullNameAr('');
+        setEditUserFullNameEn('');
+        setEditUserPhone('');
+        setEditUserNationalId('');
+        setEditUserWilayaCode('');
+        setEditUserPassword('');
+      }, 1500);
+
+    } catch (err: any) {
+      setEditUserError(err.message || 'Failed to update user');
+    } finally {
+      setEditUserLoading(false);
+    }
+  };
+
+  // Toggle Client Active State
+  const handleToggleUserActive = async (userId: string, currentActive: boolean) => {
+    const newActive = !currentActive;
+    try {
+      const response = await fetch('/api/company/users/toggle-active', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, isActive: newActive }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to toggle client status');
+      }
+
+      // Update local UI state
+      setCompanyClients(prev =>
+        prev.map(c =>
+          c.id === userId
+            ? { ...c, is_active: newActive }
+            : c
+        )
+      );
+
+      setNotification({
+        type: 'success',
+        message: isRtl
+          ? `تم ${newActive ? 'تفعيل' : 'تعطيل'} العميل بنجاح!`
+          : `Client account successfully ${newActive ? 'activated' : 'suspended'}!`
+      });
+
+    } catch (err: any) {
+      setNotification({
+        type: 'error',
+        message: err.message || 'Failed to toggle status'
+      });
+    }
+  };
+
+  // Delete Client User Submit
+  const handleDeleteUserSubmit = async () => {
+    if (!userToDelete) return;
+    setDeleteUserLoading(true);
+
+    try {
+      const response = await fetch('/api/company/users/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userToDelete.id }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to delete client account');
+      }
+
+      // Remove from local list
+      setCompanyClients(prev => prev.filter(c => c.id !== userToDelete.id));
+
+      setNotification({
+        type: 'success',
+        message: isRtl ? 'تم حذف العميل بنجاح!' : 'Client account deleted successfully!'
+      });
+
+      setIsDeleteUserModalOpen(false);
+      setUserToDelete(null);
+
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete user');
+    } finally {
+      setDeleteUserLoading(false);
+    }
+  };
+
+  // Export Data as CSV
+  const handleExportData = () => {
+    let csvContent = "";
+    let fileName = "";
+
+    if (activeTab === 'contracts') {
+      fileName = `daman_contracts_export_${Date.now()}.csv`;
+      const headers = ["Contract Number", "Client Name (EN)", "Client Name (AR)", "Client Email", "Type", "Plan", "Status", "Coverage Amount (DZD)", "Monthly Premium (DZD)", "Start Date", "End Date", "National ID", "Wilaya Code"];
+      const rows = filteredContracts.map(c => [
+        c.contract_number,
+        c.client_name_en || '',
+        c.client_name_ar || '',
+        c.client_email || '',
+        c.type,
+        c.plan,
+        c.status,
+        c.coverage_amount,
+        c.monthly_premium,
+        c.start_date,
+        c.end_date,
+        c.client_national_id || '',
+        c.client_wilaya_code || ''
+      ]);
+      csvContent = [headers, ...rows].map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(",")).join("\n");
+    } else if (activeTab === 'claims') {
+      fileName = `daman_claims_export_${Date.now()}.csv`;
+      const headers = ["Claim Number", "Contract Number", "Client Name (EN)", "Client Name (AR)", "Incident Date", "Claimed Amount (DZD)", "Approved Amount (DZD)", "Status", "Description"];
+      const rows = filteredClaims.map(c => [
+        c.claim_number,
+        c.contract_number,
+        c.client_name_en || '',
+        c.client_name_ar || '',
+        c.incident_date,
+        c.estimated_amount,
+        c.approved_amount || '',
+        c.status,
+        c.description || ''
+      ]);
+      csvContent = [headers, ...rows].map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(",")).join("\n");
+    } else if (activeTab === 'transfers') {
+      fileName = `daman_transfers_export_${Date.now()}.csv`;
+      const headers = ["Contract Number", "Client Name (EN)", "Client Name (AR)", "Reason", "From Company (EN)", "From Company (AR)", "To Company (EN)", "To Company (AR)", "Status", "Request Date"];
+      const rows = filteredTransfers.map(t => [
+        t.contract_number,
+        t.client_name_en || '',
+        t.client_name_ar || '',
+        t.reason || '',
+        t.from_name_en || '',
+        t.from_name_ar || '',
+        t.to_name_en || '',
+        t.to_name_ar || '',
+        t.status,
+        t.requested_at
+      ]);
+      csvContent = [headers, ...rows].map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(",")).join("\n");
+    } else if (activeTab === 'clients') {
+      fileName = `daman_clients_export_${Date.now()}.csv`;
+      const headers = ["Client Name (EN)", "Client Name (AR)", "Email", "Phone", "National ID", "Wilaya Code"];
+      const rows = filteredClients.map(c => [
+        c.full_name_en || '',
+        c.full_name_ar || '',
+        c.email || '',
+        c.phone || '',
+        c.national_id || '',
+        c.wilaya_code || ''
+      ]);
+      csvContent = [headers, ...rows].map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(",")).join("\n");
+    }
+
+    if (!csvContent) return;
+
+    // Create a Blob with UTF-8 BOM prefix for Arabic compatibility in Excel
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Filter & Search Logic
   const filteredContracts = contracts.filter(c => {
     const matchesSearch = 
@@ -618,6 +1157,15 @@ export default function CompanyDashboardClient({
       t.client_name_ar.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.client_name_en.toLowerCase().includes(searchQuery.toLowerCase());
     
+    return matchesSearch;
+  });
+
+  const filteredClients = companyClients.filter(c => {
+    const matchesSearch = 
+      (c.full_name_en || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (c.full_name_ar || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (c.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (c.national_id || '').includes(searchQuery);
     return matchesSearch;
   });
 
@@ -799,6 +1347,16 @@ export default function CompanyDashboardClient({
                 )}
               </button>
               <button
+                onClick={() => { setActiveTab('clients'); setSearchQuery(''); }}
+                className={`flex-1 md:flex-none px-5 py-2 text-xs font-extrabold rounded-lg transition relative ${
+                  activeTab === 'clients' 
+                    ? 'bg-white dark:bg-zinc-900 text-teal-600 dark:text-teal-400 shadow-sm' 
+                    : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                }`}
+              >
+                {t('clientsList')}
+              </button>
+              <button
                 onClick={() => { setActiveTab('analytics'); setSearchQuery(''); }}
                 className={`flex-1 md:flex-none px-5 py-2 text-xs font-extrabold rounded-lg transition relative ${
                   activeTab === 'analytics' 
@@ -843,6 +1401,18 @@ export default function CompanyDashboardClient({
                 </div>
               )}
 
+              {/* Export Data Button */}
+              {activeTab !== 'analytics' && (
+                <button
+                  onClick={handleExportData}
+                  className="w-full sm:w-auto px-4 py-2 text-xs font-bold text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 active:scale-95 flex items-center justify-center gap-1.5 transition"
+                  title={isRtl ? 'تصدير البيانات بصيغة CSV' : 'Export data as CSV'}
+                >
+                  <Download className="w-4.5 h-4.5 text-zinc-500" />
+                  <span>{isRtl ? 'تصدير' : 'Export'}</span>
+                </button>
+              )}
+
               {/* Add Policy Button for Agents */}
               {activeTab === 'contracts' && (
                 <button
@@ -852,6 +1422,25 @@ export default function CompanyDashboardClient({
                   <Plus className="w-4 h-4" />
                   {t('createContract')}
                 </button>
+              )}
+
+              {activeTab === 'clients' && (
+                <>
+                  <button
+                    onClick={() => setIsCreateUserModalOpen(true)}
+                    className="w-full sm:w-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-teal-600 to-emerald-650 rounded-xl hover:shadow-md hover:shadow-teal-500/10 active:scale-95 flex items-center justify-center gap-1.5 transition"
+                  >
+                    <Plus className="w-4 h-4" />
+                    {t('createClient') || 'Register Client'}
+                  </button>
+                  <button
+                    onClick={() => setIsImportUserModalOpen(true)}
+                    className="w-full sm:w-auto px-4 py-2 text-xs font-bold text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800/60 rounded-xl hover:bg-teal-100/50 dark:hover:bg-teal-950/50 active:scale-95 flex items-center justify-center gap-1.5 transition"
+                  >
+                    <Upload className="w-4.5 h-4.5" />
+                    {t('csvImport') || 'Import CSV'}
+                  </button>
+                </>
               )}
             </div>
 
@@ -1099,6 +1688,155 @@ export default function CompanyDashboardClient({
                                 {isIncoming ? 'Reviewed' : 'Awaiting Release'}
                               </span>
                             )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            )}
+
+            {/* 4. CLIENTS TABLE */}
+            {activeTab === 'clients' && (
+              <table className="w-full text-start text-xs">
+                <thead className="bg-zinc-50 dark:bg-zinc-950/50 text-zinc-500 border-b border-zinc-100 dark:border-zinc-800 font-bold uppercase tracking-wider">
+                  <tr>
+                    <th className="px-6 py-4 text-start">{isRtl ? 'العميل' : 'Client'}</th>
+                    <th className="px-6 py-4 text-start">{isRtl ? 'البريد الإلكتروني' : 'Email'}</th>
+                    <th className="px-6 py-4 text-start">{isRtl ? 'الهاتف' : 'Phone'}</th>
+                    <th className="px-6 py-4 text-start">{isRtl ? 'رقم التعريف الوطني' : 'National ID'}</th>
+                    <th className="px-6 py-4 text-start">{isRtl ? 'رمز الولاية' : 'Wilaya'}</th>
+                    <th className="px-6 py-4 text-center">{isRtl ? 'عدد البوالص' : 'Policies'}</th>
+                    <th className="px-6 py-4 text-center">{isRtl ? 'الحالة' : 'Status'}</th>
+                    <th className="px-6 py-4 text-center">{isRtl ? 'الإجراءات' : 'Actions'}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                  {filteredClients.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="px-6 py-12 text-center text-zinc-400 font-medium">
+                        <div className="flex flex-col items-center gap-3">
+                          <Users className="w-10 h-10 text-zinc-300 dark:text-zinc-700" />
+                          <span>{isRtl ? 'لا يوجد عملاء مطابقون للبحث' : 'No clients found matching your search'}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredClients.map((cl) => {
+                      const clientPolicies = contracts.filter(c => c.client_id === cl.id);
+                      return (
+                        <tr key={cl.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/40 transition">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500/15 to-emerald-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center flex-shrink-0">
+                                <User className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="font-bold text-zinc-900 dark:text-white">
+                                  {isRtl ? cl.full_name_ar : (cl.full_name_en || cl.full_name_ar)}
+                                </div>
+                                {cl.full_name_en && cl.full_name_ar && (
+                                  <div className="text-xxs text-zinc-400 font-medium mt-0.5">
+                                    {isRtl ? cl.full_name_en : cl.full_name_ar}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
+                              <Mail className="w-3.5 h-3.5 text-zinc-400" />
+                              <span className="font-medium">{cl.email}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
+                              <Phone className="w-3.5 h-3.5 text-zinc-400" />
+                              <span className="font-medium">{cl.phone || '—'}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5">
+                              <Hash className="w-3.5 h-3.5 text-zinc-400" />
+                              <span className="font-mono text-zinc-700 dark:text-zinc-300 font-semibold text-xxs">
+                                {cl.national_id || '—'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="px-2.5 py-1 rounded-full text-xxs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
+                              {cl.wilaya_code || '—'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xxs font-bold ${
+                              clientPolicies.length > 0
+                                ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400'
+                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'
+                            }`}>
+                              {clientPolicies.length}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xxs font-bold ${
+                              cl.is_active !== false
+                                ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400'
+                                : 'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400'
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${cl.is_active !== false ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                              {cl.is_active !== false 
+                                ? (isRtl ? 'نشط' : 'Active') 
+                                : (isRtl ? 'معطل' : 'Suspended')}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => handleToggleUserActive(cl.id, cl.is_active !== false)}
+                                title={isRtl ? (cl.is_active !== false ? 'تعطيل الحساب' : 'تفعيل الحساب') : (cl.is_active !== false ? 'Suspend Account' : 'Activate Account')}
+                                className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                  cl.is_active !== false ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-700'
+                                }`}
+                              >
+                                <span
+                                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                    cl.is_active !== false ? (isRtl ? 'translate-x-4' : 'translate-x-4') : 'translate-x-0'
+                                  }`}
+                                />
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  setEditUserId(cl.id);
+                                  setEditUserEmail(cl.email);
+                                  setEditUserFullNameAr(cl.full_name_ar);
+                                  setEditUserFullNameEn(cl.full_name_en || '');
+                                  setEditUserPhone(cl.phone || '');
+                                  setEditUserNationalId(cl.national_id || '');
+                                  setEditUserWilayaCode(cl.wilaya_code || '');
+                                  setEditUserPassword('');
+                                  setEditUserError(null);
+                                  setEditUserSuccess(false);
+                                  setIsEditUserModalOpen(true);
+                                }}
+                                className="p-1.5 rounded-lg text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                                title={isRtl ? 'تعديل' : 'Edit'}
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  setUserToDelete(cl);
+                                  setIsDeleteUserModalOpen(true);
+                                }}
+                                className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition"
+                                title={isRtl ? 'حذف' : 'Delete'}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -1914,6 +2652,563 @@ export default function CompanyDashboardClient({
               </div>
 
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 4. CREATE CLIENT USER MODAL */}
+      {isCreateUserModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl p-6 relative">
+            <button 
+              onClick={() => { setIsCreateUserModalOpen(false); setCreateUserError(null); setCreateUserSuccess(false); }}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2.5 mb-6">
+              <div className="w-9 h-9 rounded-lg bg-teal-500/10 text-teal-600 flex items-center justify-center">
+                <User className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                  {t('createClient') || (isRtl ? 'تسجيل عميل جديد' : 'Register New Client')}
+                </h3>
+                <p className="text-xxs text-zinc-400">
+                  {isRtl ? 'إنشاء حساب عميل تأمين مرتبط بشركتكم' : 'Create an insurance client account linked to your company'}
+                </p>
+              </div>
+            </div>
+
+            {createUserSuccess && (
+              <div className="mb-5 p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                  {isRtl ? 'تم إنشاء حساب العميل بنجاح!' : 'Client account created successfully!'}
+                </span>
+              </div>
+            )}
+
+            {createUserError && (
+              <div className="mb-5 p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                <span className="text-xs font-bold text-rose-700 dark:text-rose-400">{createUserError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleCreateUserSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xxs font-extrabold text-zinc-500 mb-1">
+                    {isRtl ? 'البريد الإلكتروني' : 'Email'} *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="client@example.com"
+                    value={createUserEmail}
+                    onChange={(e) => setCreateUserEmail(e.target.value)}
+                    className="w-full text-xs px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:border-teal-500 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-extrabold text-zinc-500 mb-1">
+                    {isRtl ? 'كلمة المرور' : 'Password'} *
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    placeholder="Min 6 characters"
+                    value={createUserPassword}
+                    onChange={(e) => setCreateUserPassword(e.target.value)}
+                    className="w-full text-xs px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:border-teal-500 transition"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xxs font-extrabold text-zinc-500 mb-1">
+                    {isRtl ? 'الاسم الكامل (عربي)' : 'Full Name (Arabic)'} *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    dir="rtl"
+                    placeholder="الاسم الكامل بالعربية"
+                    value={createUserFullNameAr}
+                    onChange={(e) => setCreateUserFullNameAr(e.target.value)}
+                    className="w-full text-xs px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:border-teal-500 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-extrabold text-zinc-500 mb-1">
+                    {isRtl ? 'الاسم الكامل (إنجليزي/فرنسي)' : 'Full Name (English/French)'}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Full name in Latin characters"
+                    value={createUserFullNameEn}
+                    onChange={(e) => setCreateUserFullNameEn(e.target.value)}
+                    className="w-full text-xs px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:border-teal-500 transition"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xxs font-extrabold text-zinc-500 mb-1">
+                    {isRtl ? 'رقم التعريف الوطني' : 'National ID'} *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={18}
+                    placeholder="18 digits"
+                    value={createUserNationalId}
+                    onChange={(e) => setCreateUserNationalId(e.target.value.replace(/\D/g, '').slice(0, 18))}
+                    className="w-full text-xs px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:border-teal-500 transition font-mono"
+                  />
+                  <span className="text-[10px] text-zinc-400 mt-1 block">{createUserNationalId.length}/18</span>
+                </div>
+                <div>
+                  <label className="block text-xxs font-extrabold text-zinc-500 mb-1">
+                    {isRtl ? 'رقم الهاتف' : 'Phone'}
+                  </label>
+                  <input
+                    type="tel"
+                    placeholder="05XXXXXXXX"
+                    value={createUserPhone}
+                    onChange={(e) => setCreateUserPhone(e.target.value)}
+                    className="w-full text-xs px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:border-teal-500 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-extrabold text-zinc-500 mb-1">
+                    {isRtl ? 'رمز الولاية' : 'Wilaya Code'}
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={2}
+                    placeholder="01-58"
+                    value={createUserWilayaCode}
+                    onChange={(e) => setCreateUserWilayaCode(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                    className="w-full text-xs px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:border-teal-500 transition font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2 justify-end">
+                <button
+                  type="button"
+                  onClick={() => { setIsCreateUserModalOpen(false); setCreateUserError(null); }}
+                  className="px-4.5 py-2.5 text-xs font-bold border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850 rounded-xl transition"
+                >
+                  {tCommon('cancel')}
+                </button>
+                <button
+                  type="submit"
+                  disabled={createUserLoading}
+                  className="px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-teal-600 to-emerald-600 rounded-xl hover:shadow-md hover:shadow-teal-500/10 disabled:opacity-50 transition"
+                >
+                  {createUserLoading ? (isRtl ? 'جارٍ الإنشاء...' : 'Creating...') : (isRtl ? 'إنشاء الحساب' : 'Create Account')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 5. CSV / DATABASE IMPORT MODAL */}
+      {isImportUserModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto shadow-2xl p-6 relative">
+            <button 
+              onClick={() => { 
+                setIsImportUserModalOpen(false); 
+                setImportError(null); 
+                setImportSuccess(null); 
+                setImportValidationErrors([]); 
+                setCsvPreviewMode(false);
+                setParsedCsvPreviewRows([]);
+              }}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2.5 mb-6">
+              <div className="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+                <Upload className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                  {t('csvImport') || (isRtl ? 'استيراد قاعدة البيانات' : 'Import Database (CSV)')}
+                </h3>
+                <p className="text-xxs text-zinc-400">
+                  {isRtl ? 'استيراد حسابات العملاء والبوالص دفعة واحدة من ملف CSV' : 'Bulk import client accounts and policies from CSV data'}
+                </p>
+              </div>
+            </div>
+
+            {importSuccess && (
+              <div className="mb-5 p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{importSuccess}</span>
+              </div>
+            )}
+
+            {importError && (
+              <div className="mb-5 p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                <span className="text-xs font-bold text-rose-700 dark:text-rose-400">{importError}</span>
+              </div>
+            )}
+
+            {!csvPreviewMode ? (
+              <>
+                {/* CSV Format Guide */}
+                <div className="mb-5 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/60 dark:border-zinc-800">
+                  <h4 className="text-xxs font-extrabold text-zinc-500 uppercase tracking-wider mb-2">
+                    {isRtl ? 'تنسيق CSV المطلوب' : 'Required CSV Format'}
+                  </h4>
+                  <p className="text-[10px] text-zinc-400 mb-2">
+                    {isRtl 
+                      ? 'الأعمدة المطلوبة: email, fullNameAr, nationalId. الأعمدة الاختيارية: fullNameEn, phone, wilayaCode, password, type, plan, coverageAmount, monthlyPremium'
+                      : 'Required columns: email, fullNameAr, nationalId. Optional: fullNameEn, phone, wilayaCode, password, type, plan, coverageAmount, monthlyPremium'
+                    }
+                  </p>
+                  <div className="bg-zinc-100 dark:bg-zinc-900 p-2.5 rounded-lg overflow-x-auto">
+                    <code className="text-[10px] text-zinc-500 dark:text-zinc-400 whitespace-pre font-mono">
+email,fullNameAr,nationalId,fullNameEn,phone,type,plan
+client@mail.com,محمد أحمد,123456789012345678,Mohamed Ahmed,0551234567,car,Standard</code>
+                  </div>
+                </div>
+
+                <form onSubmit={handleCSVImportSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-xxs font-extrabold text-zinc-500 mb-1">
+                      {isRtl ? 'محتوى CSV' : 'CSV Content'} *
+                    </label>
+                    <textarea
+                      required
+                      rows={10}
+                      placeholder={isRtl 
+                        ? 'الصق محتوى CSV هنا...' 
+                        : 'Paste your CSV content here...'
+                      }
+                      value={csvText}
+                      onChange={(e) => setCsvText(e.target.value)}
+                      className="w-full text-xs px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:border-indigo-500 transition font-mono leading-relaxed"
+                      dir="ltr"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-2 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => { setIsImportUserModalOpen(false); setImportError(null); }}
+                      className="px-4.5 py-2.5 text-xs font-bold border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850 rounded-xl transition"
+                    >
+                      {tCommon('cancel')}
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={importLoading || !csvText.trim()}
+                      className="px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl hover:shadow-md hover:shadow-indigo-500/10 disabled:opacity-50 transition flex items-center gap-1.5"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      {importLoading ? (isRtl ? 'جارٍ التحليل...' : 'Analyzing...') : (isRtl ? 'تحليل ومعاينة البيانات' : 'Parse & Preview Data')}
+                    </button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-black text-zinc-800 dark:text-zinc-200">
+                    {isRtl ? 'معاينة سجلات الاستيراد' : 'Import Records Preview'} ({parsedCsvPreviewRows.length} {isRtl ? 'سجل' : 'records'})
+                  </h4>
+                  <div className="text-xxs text-zinc-400">
+                    {isRtl ? 'الصفوف التي تحتوي على أخطاء حمراء لن يتم استيرادها.' : 'Rows with red errors will be skipped during import.'}
+                  </div>
+                </div>
+
+                <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden max-h-80 overflow-y-auto">
+                  <table className="w-full text-start text-[11px]">
+                    <thead className="bg-zinc-50 dark:bg-zinc-950/60 text-zinc-500 font-bold border-b border-zinc-100 dark:border-zinc-850 uppercase tracking-wider">
+                      <tr>
+                        <th className="px-4 py-3 text-start w-12">#</th>
+                        <th className="px-4 py-3 text-start">{isRtl ? 'البريد الإلكتروني' : 'Email'}</th>
+                        <th className="px-4 py-3 text-start">{isRtl ? 'الاسم (عربي)' : 'Name (Ar)'}</th>
+                        <th className="px-4 py-3 text-start">{isRtl ? 'رقم التعريف الوطني' : 'National ID'}</th>
+                        <th className="px-4 py-3 text-start">{isRtl ? 'التحذيرات' : 'Status/Warnings'}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-100 dark:divide-zinc-850">
+                      {parsedCsvPreviewRows.map((row, idx) => (
+                        <tr 
+                          key={idx} 
+                          className={`hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition ${
+                            row.hasError ? 'bg-rose-500/5' : row.warnings.length > 0 ? 'bg-amber-500/5' : ''
+                          }`}
+                        >
+                          <td className="px-4 py-3 font-mono font-bold text-zinc-400">{row.rowNum}</td>
+                          <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">{row.email || '—'}</td>
+                          <td className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">{row.fullNameAr || '—'}</td>
+                          <td className="px-4 py-3 font-mono text-zinc-600 dark:text-zinc-400">{row.nationalId || '—'}</td>
+                          <td className="px-4 py-3">
+                            {row.hasError ? (
+                              <span className="px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 font-bold text-[9px]">
+                                {isRtl ? 'خطأ - سيتم التخطي' : 'Error - Skipped'}
+                              </span>
+                            ) : row.warnings.length > 0 ? (
+                              <div className="flex flex-col gap-1">
+                                {row.warnings.map((w: string, wIdx: number) => (
+                                  <span key={wIdx} className="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 font-medium text-[9px] w-fit">
+                                    {w}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold text-[9px]">
+                                {isRtl ? 'جاهز' : 'Ready'}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex items-center gap-3 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setCsvPreviewMode(false)}
+                    className="px-4.5 py-2.5 text-xs font-bold border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850 rounded-xl transition"
+                  >
+                    {isRtl ? 'تعديل الـ CSV' : 'Edit CSV Content'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCSVImportConfirm}
+                    disabled={importLoading || parsedCsvPreviewRows.filter(r => !r.hasError).length === 0}
+                    className="px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl hover:shadow-md hover:shadow-indigo-500/10 disabled:opacity-50 transition flex items-center gap-1.5"
+                  >
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    {importLoading ? (isRtl ? 'جارٍ الاستيراد...' : 'Importing...') : (isRtl ? 'تأكيد واستيراد السجلات الصالحة' : 'Confirm & Import Valid Rows')}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 6. EDIT CLIENT USER MODAL */}
+      {isEditUserModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl p-6 relative">
+            <button 
+              onClick={() => { setIsEditUserModalOpen(false); setEditUserError(null); setEditUserSuccess(false); }}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2.5 mb-6">
+              <div className="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+                <Edit3 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                  {isRtl ? 'تعديل بيانات العميل' : 'Edit Client Details'}
+                </h3>
+                <p className="text-xxs text-zinc-400">
+                  {isRtl ? 'تحديث معلومات حساب العميل وكلمة المرور' : 'Update client account details and credentials'}
+                </p>
+              </div>
+            </div>
+
+            {editUserSuccess && (
+              <div className="mb-5 p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                  {isRtl ? 'تم تحديث البيانات بنجاح!' : 'Client details updated successfully!'}
+                </span>
+              </div>
+            )}
+
+            {editUserError && (
+              <div className="mb-5 p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                <span className="text-xs font-bold text-rose-700 dark:text-rose-400">{editUserError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleEditUserSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xxs font-extrabold text-zinc-500 mb-1">
+                    {isRtl ? 'البريد الإلكتروني' : 'Email'} *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={editUserEmail}
+                    onChange={(e) => setEditUserEmail(e.target.value)}
+                    className="w-full text-xs px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:border-indigo-500 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-extrabold text-zinc-500 mb-1">
+                    {isRtl ? 'تغيير كلمة المرور (اختياري)' : 'Change Password (Optional)'}
+                  </label>
+                  <input
+                    type="password"
+                    placeholder={isRtl ? 'اتركها فارغة لعدم التغيير' : 'Leave empty to keep current'}
+                    value={editUserPassword}
+                    onChange={(e) => setEditUserPassword(e.target.value)}
+                    className="w-full text-xs px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:border-indigo-500 transition"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xxs font-extrabold text-zinc-500 mb-1">
+                    {isRtl ? 'الاسم الكامل (عربي)' : 'Full Name (Arabic)'} *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    dir="rtl"
+                    value={editUserFullNameAr}
+                    onChange={(e) => setEditUserFullNameAr(e.target.value)}
+                    className="w-full text-xs px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:border-indigo-500 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-extrabold text-zinc-500 mb-1">
+                    {isRtl ? 'الاسم الكامل (إنجليزي/فرنسي)' : 'Full Name (English/French)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={editUserFullNameEn}
+                    onChange={(e) => setEditUserFullNameEn(e.target.value)}
+                    className="w-full text-xs px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:border-indigo-500 transition"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xxs font-extrabold text-zinc-500 mb-1">
+                    {isRtl ? 'رقم التعريف الوطني' : 'National ID'}
+                  </label>
+                  <input
+                    type="text"
+                    disabled
+                    value={editUserNationalId}
+                    className="w-full text-xs px-3.5 py-2.5 border border-zinc-100 dark:border-zinc-850 rounded-xl bg-zinc-100/50 dark:bg-zinc-950/40 text-zinc-400 focus:outline-none font-mono cursor-not-allowed"
+                  />
+                  <span className="text-[9px] text-zinc-400 mt-1 block">{isRtl ? 'لا يمكن تعديل رقم التعريف الوطني' : 'National ID cannot be modified'}</span>
+                </div>
+                <div>
+                  <label className="block text-xxs font-extrabold text-zinc-500 mb-1">
+                    {isRtl ? 'رقم الهاتف' : 'Phone'}
+                  </label>
+                  <input
+                    type="tel"
+                    value={editUserPhone}
+                    onChange={(e) => setEditUserPhone(e.target.value)}
+                    className="w-full text-xs px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:border-indigo-500 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-extrabold text-zinc-500 mb-1">
+                    {isRtl ? 'رمز الولاية' : 'Wilaya Code'}
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={2}
+                    value={editUserWilayaCode}
+                    onChange={(e) => setEditUserWilayaCode(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                    className="w-full text-xs px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:border-indigo-500 transition font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2 justify-end">
+                <button
+                  type="button"
+                  onClick={() => { setIsEditUserModalOpen(false); setEditUserError(null); }}
+                  className="px-4.5 py-2.5 text-xs font-bold border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850 rounded-xl transition"
+                >
+                  {tCommon('cancel')}
+                </button>
+                <button
+                  type="submit"
+                  disabled={editUserLoading}
+                  className="px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl hover:shadow-md hover:shadow-indigo-500/10 disabled:opacity-50 transition"
+                >
+                  {editUserLoading ? (isRtl ? 'جارٍ الحفظ...' : 'Saving...') : (isRtl ? 'حفظ التعديلات' : 'Save Changes')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 7. DELETE CLIENT CONFIRMATION MODAL */}
+      {isDeleteUserModalOpen && userToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
+            <button 
+              onClick={() => { setIsDeleteUserModalOpen(false); setUserToDelete(null); }}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2.5 mb-5 text-rose-600">
+              <div className="w-9 h-9 rounded-lg bg-rose-500/10 flex items-center justify-center">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                  {isRtl ? 'حذف حساب العميل' : 'Delete Client Account'}
+                </h3>
+              </div>
+            </div>
+
+            <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed mb-6">
+              {isRtl 
+                ? `هل أنت متأكد من رغبتك في حذف حساب العميل "${userToDelete.full_name_ar || userToDelete.email}" نهائياً؟ لا يمكن التراجع عن هذا الإجراء.`
+                : `Are you sure you want to permanently delete the client account "${userToDelete.full_name_en || userToDelete.full_name_ar || userToDelete.email}"? This action cannot be undone.`
+              }
+            </p>
+
+            <div className="flex items-center gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => { setIsDeleteUserModalOpen(false); setUserToDelete(null); }}
+                className="px-4.5 py-2.5 text-xs font-bold border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850 rounded-xl transition"
+              >
+                {tCommon('cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteUserSubmit}
+                disabled={deleteUserLoading}
+                className="px-6 py-2.5 text-xs font-bold text-white bg-rose-600 rounded-xl hover:bg-rose-700 disabled:opacity-50 transition"
+              >
+                {deleteUserLoading ? (isRtl ? 'جارٍ الحذف...' : 'Deleting...') : (isRtl ? 'حذف نهائي' : 'Permanently Delete')}
+              </button>
+            </div>
           </div>
         </div>
       )}

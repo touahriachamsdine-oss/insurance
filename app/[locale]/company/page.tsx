@@ -52,7 +52,9 @@ export default async function CompanyDashboardPage() {
        p.full_name_ar as client_name_ar,
        p.full_name_en as client_name_en,
        p.email as client_email,
-       p.phone as client_phone
+       p.phone as client_phone,
+       p.national_id as client_national_id,
+       p.wilaya_code as client_wilaya_code
      FROM public.contracts c
      JOIN public.users p ON c.client_id = p.id
      WHERE c.company_id = $1
@@ -118,11 +120,11 @@ export default async function CompanyDashboardPage() {
   );
 
   const clients = await query(
-    `SELECT DISTINCT p.id, p.full_name_ar, p.full_name_en, p.email, p.phone
+    `SELECT DISTINCT p.id, p.full_name_ar, p.full_name_en, p.email, p.phone, p.national_id, p.wilaya_code, p.is_active
      FROM public.users p
-     JOIN public.contracts c ON c.client_id = p.id
+     LEFT JOIN public.contracts c ON c.client_id = p.id
      WHERE p.role = 'client'
-       AND c.company_id = $1
+       AND (p.company_id = $1 OR c.company_id = $1)
      ORDER BY p.full_name_en ASC`,
     [user.company_id]
   );
