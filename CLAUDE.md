@@ -76,3 +76,4 @@ node lib/seed-test-accounts.js
 npm run build
 npm run lint
 ```
+8 
