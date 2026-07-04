@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
+import PremiumCalculator from '@/components/PremiumCalculator';
 
 export default function LandingPage() {
   const tCommon = useTranslations('common');
@@ -47,8 +48,9 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <main className="flex-1 flex flex-col justify-center max-w-7xl w-full mx-auto px-6 py-12 md:py-24 z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <main className="flex-1 z-10">
+        <div className="max-w-7xl w-full mx-auto px-6 py-12 md:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-7 flex flex-col items-start space-y-6 text-start">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#A1BC98]/40 bg-[#A1BC98]/10 text-[#4d664f] dark:border-[#A1BC98]/30 dark:bg-[#A1BC98]/10 dark:text-[#c4d3bc] text-xs font-semibold">
               <span className="w-2 h-2 rounded-full bg-[#778873] animate-pulse" />
@@ -123,9 +125,15 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Feature Grid */}
-        <div className="mt-24 sm:mt-32">
+      {/* Interactive Premium Estimator Section */}
+      <PremiumCalculator />
+
+      {/* Feature Grid & Details */}
+      <div className="max-w-7xl w-full mx-auto px-6 pb-24 sm:pb-32">
+          {/* Feature Grid */}
+          <div className="mt-16 sm:mt-24">
           <div className="text-center space-y-4 max-w-xl mx-auto mb-16">
             <h2 className="text-3xl font-black text-zinc-950 dark:text-white">
               {tCommon('insuranceCompaniesTitle')}
@@ -231,6 +239,7 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+      </div>
       </main>
 
       {/* Footer */}
