@@ -151,6 +151,14 @@
     "pendingApproval": "Compte en attente d'approbation",
     "registeredSuccess": "Compte créé avec succès !"
   },
+  "roles": {
+    "superadmin": "Super Administrateur",
+    "company_admin": "Directeur de compagnie",
+    "company_agent": "Agent d'assurance",
+    "client": "Client individuel",
+    "broker": "Courtier agréé",
+    "assessor": "Expert en sinistres"
+  },
   "register": {
     "selectRole": "Choisissez votre type de compte",
     "roleClient": "Client individuel",
@@ -196,7 +204,6 @@
       "rejected": "Rejetée"
     }
   },
-  "commonPage": {},
   "contracts": {
     "title": "Contrats d'assurance",
     "subtitle": "Gérez et consultez vos couvertures d'assurance",
@@ -211,7 +218,8 @@
     "newContract": "Nouveau contrat",
     "createContract": "Créer un contrat",
     "noContracts": "Aucun contrat trouvé.",
-    "addSuccess": "Contrat créé avec succès"
+    "addSuccess": "Contrat créé avec succès",
+    "pdfDownload": "Télécharger le PDF"
   },
   "claims": {
     "title": "Réclamations & Indemnisations",
