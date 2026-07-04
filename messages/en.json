@@ -279,7 +279,20 @@
     "professionalsListSubtitle": "Approve or suspend brokers, assessors, and company agents",
     "noCompanyRecords": "No company records found matching your filters.",
     "noProfessionalRecords": "No professional records found matching your filters.",
-    "verified": "Verified"
+    "verified": "Verified",
+    "pendingApproval": "Pending Approval",
+    "analyticsTab": "Analytics & Statistics",
+    "platformGrowth": "Platform Growth",
+    "platformGrowthSub": "Monthly registration of users and policy volume",
+    "moneyFlow": "Money Flow (Premiums vs Claims)",
+    "moneyFlowSub": "Comparison of premium revenues and claim payouts in DZD",
+    "roleDistribution": "Role & Activity Distribution",
+    "roleDistributionSub": "Breakdown of active and pending professionals",
+    "revenue": "Premium Revenue",
+    "claimsPaid": "Claims Paid",
+    "claimsClaimed": "Claims Submitted",
+    "users": "New Users",
+    "policies": "New Policies"
   },
   "company": {
     "title": "Company Dashboard",

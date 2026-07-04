@@ -279,7 +279,20 @@
     "professionalsListSubtitle": "Approuvez ou suspendez les courtiers, experts et agents de compagnie",
     "noCompanyRecords": "Aucun enregistrement de compagnie correspondant à vos filtres.",
     "noProfessionalRecords": "Aucun enregistrement de professionnel correspondant à vos filtres.",
-    "verified": "Vérifié"
+    "verified": "Vérifié",
+    "pendingApproval": "En attente d'approbation",
+    "analyticsTab": "Analyses & Statistiques",
+    "platformGrowth": "Croissance de la Plateforme",
+    "platformGrowthSub": "Inscriptions mensuelles des utilisateurs et volume de polices",
+    "moneyFlow": "Flux Financier (Primes vs Sinistres)",
+    "moneyFlowSub": "Comparaison des revenus de primes et des paiements de sinistres en DZD",
+    "roleDistribution": "Distribution des Rôles & Activité",
+    "roleDistributionSub": "Répartition des professionnels actifs et en attente",
+    "revenue": "Revenus de Primes",
+    "claimsPaid": "Sinistres Payés",
+    "claimsClaimed": "Sinistres Déclarés",
+    "users": "Nouveaux Utilisateurs",
+    "policies": "Nouvelles Polices"
   },
   "company": {
     "title": "Tableau de bord de la compagnie",
