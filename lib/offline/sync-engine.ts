@@ -26,6 +26,9 @@ export interface SyncStatus {
   isOnline: boolean;
 }
 
+// In-memory fallback queue to prevent data loss if localStorage quota (~5MB) is exceeded
+let inMemoryQueue: SyncQueueItem[] = [];
+
 /**
  * Add an item to the offline sync queue
  */
@@ -42,24 +45,59 @@ export async function addToSyncQueue(
 
   console.log(`[Offline] Added to sync queue: ${queueItem.type} (${queueItem.id})`);
 
-  // In production, persist to IndexedDB or SQLite via local storage
   if (typeof window !== 'undefined') {
-    const existing = JSON.parse(localStorage.getItem('syncQueue') || '[]');
-    existing.push(queueItem);
-    localStorage.setItem('syncQueue', JSON.stringify(existing));
+    try {
+      const existing = JSON.parse(localStorage.getItem('syncQueue') || '[]');
+      existing.push(queueItem);
+      localStorage.setItem('syncQueue', JSON.stringify(existing));
+    } catch (e: any) {
+      console.warn('[Offline] Storage quota exceeded or error occurred writing to localStorage. Trying cleanup.', e);
+      
+      // Try to clear completed syncs to free space, then write again
+      try {
+        const existing = JSON.parse(localStorage.getItem('syncQueue') || '[]');
+        const filtered = existing.filter((i: any) => i.status !== 'completed');
+        filtered.push(queueItem);
+        localStorage.setItem('syncQueue', JSON.stringify(filtered));
+      } catch (innerErr) {
+        console.error('[Offline] Storage fully exhausted. Falling back to in-memory queue storage.', innerErr);
+        // Fallback to in-memory storage for this session so we don't crash the user flow
+        inMemoryQueue.push(queueItem);
+      }
+    }
+  } else {
+    // SSR/Node environment fallback
+    inMemoryQueue.push(queueItem);
   }
 
   return queueItem;
 }
 
 /**
- * Get all items in the sync queue
+ * Get all items in the sync queue (merged local + in-memory fallback)
  */
 export async function getSyncQueue(): Promise<SyncQueueItem[]> {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === 'undefined') return inMemoryQueue;
 
-  const stored = localStorage.getItem('syncQueue');
-  return stored ? JSON.parse(stored) : [];
+  try {
+    const stored = localStorage.getItem('syncQueue');
+    const diskQueue = stored ? JSON.parse(stored) : [];
+    
+    // Deduplicate in case items got copied or merged
+    const combined = [...diskQueue];
+    const diskIds = new Set(diskQueue.map((item: any) => item.id));
+    
+    for (const memItem of inMemoryQueue) {
+      if (!diskIds.has(memItem.id)) {
+        combined.push(memItem);
+      }
+    }
+    
+    return combined;
+  } catch (e) {
+    console.error('[Offline] Error reading from localStorage, using in-memory fallback.', e);
+    return inMemoryQueue;
+  }
 }
 
 /**
@@ -82,7 +120,6 @@ export async function processSyncQueue(): Promise<SyncStatus> {
   // Process each item
   for (const item of pendingItems) {
     try {
-      // In production, call appropriate API endpoint
       console.log(`[Offline] Syncing ${item.type} (${item.id})...`);
       await simulateSync(item);
 
@@ -121,7 +158,19 @@ async function simulateSync(item: SyncQueueItem): Promise<void> {
  */
 async function saveSyncQueue(queue: SyncQueueItem[]): Promise<void> {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('syncQueue', JSON.stringify(queue));
+    try {
+      localStorage.setItem('syncQueue', JSON.stringify(queue));
+      // If saved to disk successfully, we can clean up the memory copy of those disk items
+      inMemoryQueue = inMemoryQueue.filter(
+        (memItem) => !queue.some((diskItem) => diskItem.id === memItem.id)
+      );
+    } catch (e) {
+      console.warn('[Offline] Quota exceeded on saveSyncQueue, retaining in-memory fallback.', e);
+      // Keep entire queue in-memory if disk writes fail
+      inMemoryQueue = queue;
+    }
+  } else {
+    inMemoryQueue = queue;
   }
 }
 
@@ -149,6 +198,7 @@ export async function getSyncStatus(): Promise<SyncStatus> {
 export async function clearCompletedSyncs(): Promise<void> {
   const queue = await getSyncQueue();
   const filtered = queue.filter((i) => i.status !== 'completed');
+  inMemoryQueue = inMemoryQueue.filter((i) => i.status !== 'completed');
   await saveSyncQueue(filtered);
 }
 
@@ -191,4 +241,4 @@ export function onConnectivityChange(
     window.removeEventListener('online', handleOnline);
     window.removeEventListener('offline', handleOffline);
   };
-}
+}
