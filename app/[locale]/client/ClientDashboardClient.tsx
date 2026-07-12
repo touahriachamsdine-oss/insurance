@@ -27,8 +27,22 @@ import {
   CheckCircle,
   ArrowLeft,
   Printer,
-  QrCode
+  QrCode,
+  PieChart as PieIcon,
+  BarChart2
 } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip
+} from 'recharts';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 
@@ -133,6 +147,55 @@ const calculateRates = (type: string, plan: string) => {
   }
 };
 
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    const formatCurrency = (val: number) => {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
+    };
+
+    return (
+      <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-3 rounded-xl shadow-xl text-xs space-y-1.5 backdrop-blur-md">
+        <p className="font-extrabold text-zinc-900 dark:text-zinc-100">
+          {data.name || label}
+        </p>
+        {data.premium !== undefined && (
+          <p className="text-zinc-650 dark:text-zinc-400">
+            <span className="font-semibold text-emerald-600 dark:text-emerald-450">Annualized Premium:</span> {formatCurrency(data.premium)}
+          </p>
+        )}
+        {data.annualPremium !== undefined && (
+          <p className="text-zinc-650 dark:text-zinc-400">
+            <span className="font-semibold text-emerald-600 dark:text-emerald-450">Annual Premium:</span> {formatCurrency(data.annualPremium)}
+          </p>
+        )}
+        {data.monthlyPremium !== undefined && (
+          <p className="text-zinc-650 dark:text-zinc-400">
+            <span className="font-semibold text-emerald-600 dark:text-emerald-450">Monthly Premium:</span> {formatCurrency(data.monthlyPremium)}
+          </p>
+        )}
+        {data.coverage !== undefined && data.coverage > 0 && (
+          <p className="text-zinc-655 dark:text-zinc-350">
+            <span className="font-semibold">Coverage:</span> {formatCurrency(data.coverage)}
+          </p>
+        )}
+        {data.count !== undefined && (
+          <p className="text-zinc-500">
+            <span className="font-semibold">Policies:</span> {data.count}
+          </p>
+        )}
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function ClientDashboardClient({ 
   user, 
   contracts: initialContracts, 
@@ -223,6 +286,70 @@ export default function ClientDashboardClient({
 
   const activeContractsList = contracts.filter((contract) => contract.status === 'active');
   const openClaimsList = claims.filter((claim) => claim.status !== 'rejected' && claim.status !== 'approved');
+
+  // Chart colors (Sage theme matching the app aesthetic)
+  const CHART_COLORS = [
+    '#778873', // Sage / Olive
+    '#b39c84', // Earth Clay
+    '#a89875', // Ochre / Gold
+    '#4f4830', // Deep Bronze
+    '#a99f88', // Dried Moss
+  ];
+
+  const portfolioDistribution = React.useMemo(() => {
+    const categoriesMap: Record<string, { name: string; coverage: number; premium: number; count: number }> = {};
+    
+    // Initialize map
+    CATEGORIES.forEach(cat => {
+      categoriesMap[cat.value] = {
+        name: isRtl ? cat.labelAr : cat.labelEn,
+        coverage: 0,
+        premium: 0,
+        count: 0
+      };
+    });
+
+    contracts.forEach(c => {
+      if (c.status === 'active' || c.status === 'pending') {
+        const catValue = c.type;
+        const current = categoriesMap[catValue] || {
+          name: catValue,
+          coverage: 0,
+          premium: 0,
+          count: 0
+        };
+        current.coverage += parseFloat(c.coverage_amount || '0');
+        current.premium += parseFloat(c.monthly_premium || '0') * 12; // Annualized
+        current.count += 1;
+        categoriesMap[catValue] = current;
+      }
+    });
+
+    return Object.keys(categoriesMap)
+      .map(key => ({
+        category: key,
+        ...categoriesMap[key]
+      }))
+      .filter(item => item.count > 0);
+  }, [contracts, isRtl]);
+
+  const premiumCostByPolicy = React.useMemo(() => {
+    return contracts
+      .filter(c => c.status === 'active' || c.status === 'pending')
+      .map(c => {
+        const cat = CATEGORIES.find(cat => cat.value === c.type);
+        const nameLabel = isRtl ? c.company_name_ar : c.company_name_en;
+        const catLabel = isRtl ? cat?.labelAr : cat?.labelEn;
+        return {
+          id: c.id,
+          name: `${nameLabel} (${catLabel})`,
+          monthlyPremium: parseFloat(c.monthly_premium || '0'),
+          annualPremium: parseFloat(c.monthly_premium || '0') * 12,
+          coverage: parseFloat(c.coverage_amount || '0'),
+          shortNumber: c.contract_number.slice(0, 8) + '...'
+        };
+      });
+  }, [contracts, isRtl]);
 
   // Handle Logout
   const handleLogout = async () => {
@@ -736,6 +863,110 @@ export default function ClientDashboardClient({
                 <div className="flex items-center gap-1 mt-2 text-xxs text-amber-600 dark:text-amber-400 font-bold animate-pulse">
                   <Clock className="w-3.5 h-3.5" />
                   {isRtl ? 'قيد الدراسة والمراجعة' : 'Under assessment'}
+                </div>
+              </div>
+            </div>
+
+            {/* Visual Analytics Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-8">
+              {/* Premium & Policy Distribution Pie Chart */}
+              <div className="rounded-2xl border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-5 hover:shadow-md transition flex flex-col justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-zinc-800 dark:text-zinc-100 mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                    {isRtl ? 'توزيع الأقساط حسب الفئة' : 'Premium Distribution by Category'}
+                  </h4>
+                  {portfolioDistribution.length > 0 ? (
+                    <div className="h-[240px] w-full flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div className="h-[200px] w-full sm:w-1/2">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={portfolioDistribution}
+                              dataKey="premium"
+                              nameKey="name"
+                              cx="50%"
+                              cy="50%"
+                              outerRadius={75}
+                              innerRadius={45}
+                              paddingAngle={4}
+                            >
+                              {portfolioDistribution.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip content={<CustomTooltip />} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="w-full sm:w-1/2 space-y-2 max-h-[200px] overflow-y-auto pr-1">
+                        {portfolioDistribution.map((entry, index) => {
+                          const percent = (entry.premium / portfolioDistribution.reduce((acc, c) => acc + c.premium, 0)) * 100;
+                          return (
+                            <div key={entry.category} className="flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-2">
+                                <span 
+                                  className="w-2.5 h-2.5 rounded-full shrink-0" 
+                                  style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }} 
+                                />
+                                <span className="text-zinc-650 dark:text-zinc-400 font-medium">{entry.name}</span>
+                              </div>
+                              <span className="text-zinc-900 dark:text-zinc-200 font-bold">
+                                {percent.toFixed(0)}%
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-[240px] flex items-center justify-center text-zinc-400 dark:text-zinc-550 text-xs">
+                      {isRtl ? 'لا توجد بيانات كافية للرسم البياني' : 'No sufficient data for chart'}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Monthly/Annual Premiums comparison per company/policy */}
+              <div className="rounded-2xl border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-5 hover:shadow-md transition flex flex-col justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-zinc-800 dark:text-zinc-100 mb-4 flex items-center gap-2">
+                    <BarChart2 className="w-4.5 h-4.5 text-amber-500 shrink-0" />
+                    {isRtl ? 'القسط السنوي حسب العقد' : 'Annual Premium by Policy'}
+                  </h4>
+                  {premiumCostByPolicy.length > 0 ? (
+                    <div className="h-[240px] w-full text-[11px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={premiumCostByPolicy}
+                          margin={{ top: 10, right: 10, left: -20, bottom: 20 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" className="dark:stroke-zinc-800/30" vertical={false} />
+                          <XAxis 
+                            dataKey="shortNumber" 
+                            stroke="#a1a1aa" 
+                            tickLine={false}
+                            axisLine={false}
+                          />
+                          <YAxis 
+                            stroke="#a1a1aa" 
+                            tickLine={false}
+                            axisLine={false}
+                          />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Bar 
+                            dataKey="annualPremium" 
+                            fill="#778873" 
+                            radius={[4, 4, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="h-[240px] flex items-center justify-center text-zinc-400 dark:text-zinc-550 text-xs">
+                      {isRtl ? 'لا توجد بيانات كافية للرسم البياني' : 'No sufficient data for chart'}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

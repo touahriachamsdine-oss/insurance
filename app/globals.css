@@ -425,13 +425,42 @@ body {
 .dark input,
 .dark textarea,
 .dark select,
-.dark button,
+.dark button:not([class*="bg-"]),
 .night input,
 .night textarea,
 .night select,
-.night button {
+.night button:not([class*="bg-"]) {
   color: var(--text-body) !important;
   background-color: var(--bg-surface) !important;
+}
+
+/* Fix bg-zinc-900 styling in dark and night modes */
+.dark [class*="bg-zinc-900"],
+.dark [class*="bg-white"] {
+  background-color: var(--bg-surface) !important;
+}
+.dark [class*="bg-zinc-900/50"] {
+  background-color: color-mix(in srgb, var(--bg-surface) 50%, transparent) !important;
+}
+.dark [class*="bg-zinc-900/40"] {
+  background-color: color-mix(in srgb, var(--bg-surface) 40%, transparent) !important;
+}
+.dark [class*="bg-zinc-900/20"] {
+  background-color: color-mix(in srgb, var(--bg-surface) 20%, transparent) !important;
+}
+
+.night [class*="bg-zinc-900"],
+.night [class*="bg-white"] {
+  background-color: var(--bg-surface) !important;
+}
+.night [class*="bg-zinc-900/50"] {
+  background-color: color-mix(in srgb, var(--bg-surface) 50%, transparent) !important;
+}
+.night [class*="bg-zinc-900/40"] {
+  background-color: color-mix(in srgb, var(--bg-surface) 40%, transparent) !important;
+}
+.night [class*="bg-zinc-900/20"] {
+  background-color: color-mix(in srgb, var(--bg-surface) 20%, transparent) !important;
 }
 
 .dark input::placeholder,

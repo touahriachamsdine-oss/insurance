@@ -24,7 +24,17 @@ export default async function ClientDashboardPage() {
        c.end_date::text AS end_date,
        comp.name_ar AS company_name_ar,
        comp.name_en AS company_name_en,
-       c.data
+       jsonb_build_object(
+         'vehicleMake', c.vehicle_make,
+         'vehicleModel', c.vehicle_model,
+         'vehicleYear', c.vehicle_year,
+         'vehiclePlate', c.vehicle_plate,
+         'vehicleVin', c.vehicle_vin,
+         'propertyAddress', c.property_address,
+         'propertyWilaya', c.property_wilaya,
+         'propertyAreaSqm', c.property_area_sqm,
+         'beneficiariesCount', c.beneficiaries_count
+       ) AS data
      FROM public.contracts c
      JOIN public.companies comp ON c.company_id = comp.id
      WHERE c.client_id = $1
