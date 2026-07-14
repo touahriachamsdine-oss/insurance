@@ -140,22 +140,22 @@
   --border-strong: transparent;
 
   /* Text */
-  --text-primary:  #ece2d6;   /* warm cream — headings */
-  --text-body:     #d8ccb9;   /* soft sand — body */
-  --text-muted:    #a99f88;   /* muted ochre — secondary */
-  --text-faint:    #7d745f;   /* dusk — hints */
+  --text-primary:  #f4efe6;   /* crisp warm cream — headings */
+  --text-body:     #e2d7c5;   /* bright sand — body */
+  --text-muted:    #c4b79e;   /* vibrant ochre — secondary */
+  --text-faint:    #9c907a;   /* clear dusk — hints */
 
   /* Sage accents (same hues, luminosity-shifted for dark bg) */
   --sage-50:  #232623;
   --sage-100: #2d312d;
   --sage-200: #3d443d;
   --sage-300: #5a6458;
-  --sage-400: #767568;
-  --sage-500: #92867b;
-  --sage-600: #aea58b;
-  --sage-700: #c8b997;
-  --sage-800: #dbcdb3;
-  --sage-900: #f0e3c8;
+  --sage-400: #8a887a;
+  --sage-500: #a89a8c;
+  --sage-600: #c2b79a;
+  --sage-700: #dac9a4;
+  --sage-800: #ebdcc2;
+  --sage-900: #f7ebd7;
 
   /* Warm sand — used as warm accent tones */
   --sand-100: #1b1916;
@@ -164,18 +164,18 @@
   --sand-400: #dbcdb3;
   --sand-500: #f0e7d9;
 
-  /* Zinc remaps — dark earth/moss palette */
+  /* Zinc remaps — dark earth/moss palette with boosted readability */
   --zinc-50:  #10120f;
   --zinc-100: #1f211d;
   --zinc-200: #292a26;
   --zinc-300: #383a33;
-  --zinc-400: #4d4f47;
-  --zinc-450: #636356;
-  --zinc-500: #7c7b6d;
-  --zinc-600: #9a9685;
-  --zinc-700: #b8af9b;
-  --zinc-800: #d2c8b8;
-  --zinc-900: #ede4d4;
+  --zinc-400: #7c7b6d;   /* boosted from #4d4f47 for high contrast labels */
+  --zinc-450: #939180;
+  --zinc-500: #aab29c;   /* boosted for high contrast headings */
+  --zinc-600: #c4bca6;
+  --zinc-700: #d6ccb8;
+  --zinc-800: #e8decb;
+  --zinc-900: #f7efe2;
   --zinc-950: #0a0c09;
 
   /* Semantic accents */
@@ -209,22 +209,22 @@
   --border-strong: transparent;
 
   /* Text */
-  --text-primary:  #f6efe2;   /* warm cream — headings */
-  --text-body:     #dbd1c1;   /* dusted sand — body */
-  --text-muted:    #ab9f84;   /* subdued ochre — secondary */
-  --text-faint:    #776c59;   /* twilight — hints */
+  --text-primary:  #fcf8f0;   /* bright warm cream — headings */
+  --text-body:     #e8ded0;   /* bright dusted sand — body */
+  --text-muted:    #cbbea4;   /* vibrant ochre — secondary */
+  --text-faint:    #a0937a;   /* clear twilight — hints */
 
   /* Sage accents — maximally vibrant in night mode */
   --sage-50:  #111810;
   --sage-100: #172117;
   --sage-200: #233026;
   --sage-300: #3c4a3f;
-  --sage-400: #5c7054;
-  --sage-500: #7f8c6f;
-  --sage-600: #a1b08d;
-  --sage-700: #c1c6a8;
-  --sage-800: #ddcfba;
-  --sage-900: #f2e5ce;
+  --sage-400: #7b9472;
+  --sage-500: #9cb088;
+  --sage-600: #bac8a6;
+  --sage-700: #d6dbae;
+  --sage-800: #ede0c7;
+  --sage-900: #faf1df;
 
   /* Warm sand — warm balance accent for night */
   --sand-100: #0f0e0a;
@@ -233,18 +233,18 @@
   --sand-400: #f2e7d6;
   --sand-500: #fff8ed;
 
-  /* Zinc remaps — night earth/moss palette */
+  /* Zinc remaps — night earth/moss palette with high contrast */
   --zinc-50:  #060904;
   --zinc-100: #111811;
   --zinc-200: #1a231d;
   --zinc-300: #242e26;
-  --zinc-400: #3b4d3d;
-  --zinc-450: #5a725d;
-  --zinc-500: #8f9d7d;
-  --zinc-600: #b6bea1;
-  --zinc-700: #d9d2bf;
-  --zinc-800: #ece5d7;
-  --zinc-900: #f9f3e7;
+  --zinc-400: #889a80;   /* boosted for clear labels */
+  --zinc-450: #9eb294;
+  --zinc-500: #b5c7a4;   /* boosted for vivid subheadings */
+  --zinc-600: #ced9ba;
+  --zinc-700: #e2dcc8;
+  --zinc-800: #f2ebd9;
+  --zinc-900: #fcf8ee;
   --zinc-950: #030503;
 
   /* Semantic accents */
@@ -310,9 +310,9 @@
   --color-purple-500: var(--sage-500);
   --color-purple-600: var(--sage-600);
 
-  /* White / Black semantic swap per mode */
-  --color-white: var(--bg-surface);
-  --color-black: var(--text-primary);
+  /* Standard White / Black */
+  --color-white: #ffffff;
+  --color-black: #000000;
 }
 
 /* =========================================================
@@ -365,6 +365,26 @@
 .night body {
   background-color: var(--bg-base) !important;
   color: var(--text-body) !important;
+}
+
+/* Ensure text-zinc heading and body classes pop cleanly in dark and night modes */
+.dark [class*="text-zinc-900"],
+.night [class*="text-zinc-900"] {
+  color: var(--text-primary) !important;
+}
+
+.dark [class*="text-zinc-800"],
+.dark [class*="text-zinc-700"],
+.night [class*="text-zinc-800"],
+.night [class*="text-zinc-700"] {
+  color: var(--text-body) !important;
+}
+
+.dark [class*="text-zinc-600"],
+.dark [class*="text-zinc-500"],
+.night [class*="text-zinc-600"],
+.night [class*="text-zinc-500"] {
+  color: var(--text-muted) !important;
 }
 
 /* =========================================================
