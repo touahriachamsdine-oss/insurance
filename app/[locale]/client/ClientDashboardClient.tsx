@@ -107,41 +107,41 @@ interface UploadedFile {
 }
 
 const CATEGORIES = [
-  { value: 'car', labelEn: 'Automobile Insurance', labelAr: 'تأمين السيارات', icon: '🚗' },
-  { value: 'home', labelEn: 'Home Insurance', labelAr: 'تأمين السكن', icon: '🏠' },
-  { value: 'health', labelEn: 'Health Insurance', labelAr: 'تأمين صحي', icon: '🏥' },
-  { value: 'life', labelEn: 'Life Insurance', labelAr: 'تأمين على الحياة', icon: '👥' },
-  { value: 'agriculture', labelEn: 'Agricultural Insurance', labelAr: 'التأمين الفلاحي', icon: '🌾' },
+  { value: 'car', labelEn: 'Automobile Insurance', labelAr: 'تأمين السيارات', labelFr: 'Assurance Automobile', icon: '🚗' },
+  { value: 'home', labelEn: 'Home Insurance', labelAr: 'تأمين السكن', labelFr: 'Assurance Habitation', icon: '🏠' },
+  { value: 'health', labelEn: 'Health Insurance', labelAr: 'تأمين صحي', labelFr: 'Assurance Santé', icon: '🏥' },
+  { value: 'life', labelEn: 'Life Insurance', labelAr: 'تأمين على الحياة', labelFr: 'Assurance Vie', icon: '👥' },
+  { value: 'agriculture', labelEn: 'Agricultural Insurance', labelAr: 'التأمين الفلاحي', labelFr: 'Assurance Agricole', icon: '🌾' },
 ];
 
 const PLANS = [
-  { value: 'Standard', labelEn: 'Standard Plan', labelAr: 'المخطط القياسي', descEn: 'Essential liability and damage coverage', descAr: 'تغطية المسؤولية والأضرار الأساسية' },
-  { value: 'Premium', labelEn: 'Premium Plan', labelAr: 'المخطط الممتاز', descEn: 'All-inclusive premium packages with lowest deductibles', descAr: 'باقات شاملة وممتازة مع أدنى حد من الاستقطاعات' },
+  { value: 'Standard', labelEn: 'Standard Plan', labelAr: 'المخطط القياسي', labelFr: 'Formule Standard', descEn: 'Essential liability and damage coverage', descAr: 'تغطية المسؤولية والأضرار الأساسية', descFr: 'Couverture responsabilité et dommages essentiels' },
+  { value: 'Premium', labelEn: 'Premium Plan', labelAr: 'المخطط الممتاز', labelFr: 'Formule Premium', descEn: 'All-inclusive premium packages with lowest deductibles', descAr: 'باقات شاملة وممتازة مع أدنى حد من الاستقطاعات', descFr: 'Formules intégrales haut de gamme avec franchises minimales' },
 ];
 
-// Helper to calculate premium and coverage based on type & plan
+// Helper to calculate premium and coverage based on type & plan (Monthly Premium & Maximum Coverage in DZD)
 const calculateRates = (type: string, plan: string) => {
   switch (type) {
     case 'car':
       return plan === 'Standard' 
-        ? { coverage: 1500000, premium: 2500 }
-        : { coverage: 3000000, premium: 5000 };
+        ? { coverage: 2500000, premium: 2600 }
+        : { coverage: 5000000, premium: 4800 };
     case 'home':
       return plan === 'Standard'
-        ? { coverage: 5000000, premium: 1500 }
-        : { coverage: 10000000, premium: 3000 };
+        ? { coverage: 8000000, premium: 650 }
+        : { coverage: 18000000, premium: 1600 };
     case 'health':
       return plan === 'Standard'
-        ? { coverage: 1000000, premium: 2000 }
-        : { coverage: 2500000, premium: 4000 };
+        ? { coverage: 600000, premium: 1800 }
+        : { coverage: 1500000, premium: 3800 };
     case 'life':
       return plan === 'Standard'
-        ? { coverage: 2000000, premium: 1800 }
-        : { coverage: 5000000, premium: 3500 };
+        ? { coverage: 4000000, premium: 2500 }
+        : { coverage: 10000000, premium: 4800 };
     case 'agriculture':
       return plan === 'Standard'
-        ? { coverage: 4000000, premium: 3000 }
-        : { coverage: 8000000, premium: 6000 };
+        ? { coverage: 7500000, premium: 3200 }
+        : { coverage: 18000000, premium: 6800 };
     default:
       return { coverage: 0, premium: 0 };
   }
@@ -157,7 +157,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     const formatCurrency = (val: number) => {
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
+      return `${new Intl.NumberFormat('en-US').format(val)} DZD`;
     };
 
     return (
@@ -208,6 +208,12 @@ export default function ClientDashboardClient({
   const locale = useLocale();
   const router = useRouter();
   const isRtl = locale === 'ar';
+
+  const txt = (ar: string, fr: string, en: string) => {
+    if (locale === 'ar') return ar;
+    if (locale === 'fr') return fr;
+    return en;
+  };
 
   const [contracts, setContracts] = useState<Contract[]>(initialContracts);
   const [claims, setClaims] = useState<Claim[]>(initialClaims);
@@ -301,8 +307,9 @@ export default function ClientDashboardClient({
     
     // Initialize map
     CATEGORIES.forEach(cat => {
+      const catLabel = locale === 'ar' ? cat.labelAr : locale === 'fr' ? cat.labelFr : cat.labelEn;
       categoriesMap[cat.value] = {
-        name: isRtl ? cat.labelAr : cat.labelEn,
+        name: catLabel,
         coverage: 0,
         premium: 0,
         count: 0
@@ -331,25 +338,25 @@ export default function ClientDashboardClient({
         ...categoriesMap[key]
       }))
       .filter(item => item.count > 0);
-  }, [contracts, isRtl]);
+  }, [contracts, locale]);
 
   const premiumCostByPolicy = React.useMemo(() => {
     return contracts
       .filter(c => c.status === 'active' || c.status === 'pending')
       .map(c => {
         const cat = CATEGORIES.find(cat => cat.value === c.type);
-        const nameLabel = isRtl ? c.company_name_ar : c.company_name_en;
-        const catLabel = isRtl ? cat?.labelAr : cat?.labelEn;
+        const nameLabel = locale === 'ar' ? (c.company_name_ar || c.company_name_en) : (c.company_name_en || c.company_name_ar);
+        const catLabel = locale === 'ar' ? cat?.labelAr : locale === 'fr' ? cat?.labelFr : cat?.labelEn;
         return {
           id: c.id,
-          name: `${nameLabel} (${catLabel})`,
+          name: `${nameLabel} (${catLabel || c.type})`,
           monthlyPremium: parseFloat(c.monthly_premium || '0'),
           annualPremium: parseFloat(c.monthly_premium || '0') * 12,
           coverage: parseFloat(c.coverage_amount || '0'),
           shortNumber: c.contract_number.slice(0, 8) + '...'
         };
       });
-  }, [contracts, isRtl]);
+  }, [contracts, locale]);
 
   // Handle Logout
   const handleLogout = async () => {
@@ -725,10 +732,11 @@ export default function ClientDashboardClient({
         <div className="bg-gradient-to-r from-emerald-600 to-indigo-600 text-white px-6 py-3.5 text-center text-xs font-bold flex items-center justify-center gap-2 relative overflow-hidden">
           <Sparkles className="w-4 h-4 animate-bounce" />
           <span>
-            {isRtl 
-              ? 'مرحباً بك في ضمان! يرجى تقديم طلبك الأول لتفعيل بوالص التأمين والمطالبات.' 
-              : 'Welcome to Daman! Submit your first insurance policy application below to start.'
-            }
+            {txt(
+              'مرحباً بك في ضمان! يرجى تقديم طلبك الأول لتفعيل بوالص التأمين والمطالبات.',
+              'Bienvenue sur Daman ! Veuillez soumettre votre première demande de police d\'assurance ci-dessous.',
+              'Welcome to Daman! Submit your first insurance policy application below to start.'
+            )}
           </span>
         </div>
       )}
@@ -772,7 +780,7 @@ export default function ClientDashboardClient({
             }`}
           >
             <Layers className="w-4 h-4" />
-            {isRtl ? 'نظرة عامة وبوالصي' : 'Policies Overview'}
+            {txt('نظرة عامة وبوالصي', 'Aperçu et mes polices', 'Policies Overview')}
           </button>
           
           <button
@@ -784,7 +792,7 @@ export default function ClientDashboardClient({
             }`}
           >
             <Plus className="w-4 h-4" />
-            {isRtl ? 'طلب بوليصة وتأمين' : 'Apply & Submit Files'}
+            {txt('طلب بوليصة وتأمين', 'Souscrire une police', 'Apply & Submit Files')}
           </button>
 
           <button
@@ -798,7 +806,7 @@ export default function ClientDashboardClient({
             }`}
           >
             <FileCheck2 className="w-4 h-4" />
-            {isRtl ? 'تقديم مطالبة تعويض' : 'File a Claim'}
+            {txt('تقديم مطالبة تعويض', 'Déclarer un sinistre', 'File a Claim')}
           </button>
 
           <button
@@ -810,7 +818,7 @@ export default function ClientDashboardClient({
             }`}
           >
             <FileText className="w-4 h-4" />
-            {isRtl ? 'مركز المستندات' : 'My Uploads Center'}
+            {txt('مركز المستندات', 'Centre de documents', 'My Uploads Center')}
             {documentHistory.length > 0 && (
               <span className="ml-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded-full text-[10px]">
                 {documentHistory.length}

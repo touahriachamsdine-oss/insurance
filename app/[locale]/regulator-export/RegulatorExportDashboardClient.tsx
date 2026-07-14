@@ -49,6 +49,12 @@ export default function RegulatorExportDashboardClient({
   const isRtl = locale === 'ar';
   const router = useRouter();
 
+  const txt = (ar: string, fr: string, en: string) => {
+    if (locale === 'ar') return ar;
+    if (locale === 'fr') return fr;
+    return en;
+  };
+
   const [selectedPeriod, setSelectedPeriod] = useState('Q1-2026');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationResult, setGenerationResult] = useState<string | null>(null);
@@ -77,15 +83,17 @@ export default function RegulatorExportDashboardClient({
       const data = await res.json();
       if (data.success) {
         setGenerationResult(
-          isRtl
-            ? `تم إنشاء التقرير بنجاح. معرف التقرير: ${data.reportId}`
-            : `Report generated successfully. Report ID: ${data.reportId}`
+          txt(
+            `تم إنشاء التقرير بنجاح. معرف التقرير: ${data.reportId}`,
+            `Rapport généré avec succès. ID: ${data.reportId}`,
+            `Report generated successfully. Report ID: ${data.reportId}`
+          )
         );
       } else {
-        setGenerationResult(isRtl ? 'فشل إنشاء التقرير' : 'Report generation failed');
+        setGenerationResult(txt('فشل إنشاء التقرير', 'Échec de la génération du rapport', 'Report generation failed'));
       }
     } catch (error) {
-      setGenerationResult(isRtl ? 'حدث خطأ أثناء إنشاء التقرير' : 'Error generating report');
+      setGenerationResult(txt('حدث خطأ أثناء إنشاء التقرير', 'Erreur lors de la génération du rapport', 'Error generating report'));
     }
     setIsGenerating(false);
   };
@@ -113,13 +121,13 @@ export default function RegulatorExportDashboardClient({
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
             <p className="text-sm uppercase tracking-[0.24em] text-emerald-700 dark:text-emerald-300">
-              {isRtl ? 'التقارير التنظيمية' : 'Regulatory Reporting'}
+              {txt('التقارير التنظيمية', 'Rapports Réglementaires', 'Regulatory Reporting')}
             </p>
             <h1 className="text-3xl font-black mt-2">
-              {isRtl ? 'تصدير هيئة الرقابة' : 'Regulator Export Portal'}
+              {txt('تصدير هيئة الرقابة', 'Portail d\'Exportation Réglementaire', 'Regulator Export Portal')}
             </h1>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-              {isRtl ? company.nameAr : company.nameEn} ({company.code})
+              {locale === 'ar' ? company.nameAr : company.nameEn} ({company.code})
             </p>
           </div>
           <div className="flex items-center gap-3">
