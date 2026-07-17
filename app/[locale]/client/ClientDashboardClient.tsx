@@ -29,7 +29,8 @@ import {
   Printer,
   QrCode,
   PieChart as PieIcon,
-  BarChart2
+  BarChart2,
+  UserCircle
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -91,6 +92,9 @@ interface ClientDashboardClientProps {
     fullNameAr: string;
     fullNameEn: string;
     role: string;
+    phone?: string;
+    nin?: string;
+    createdAt?: string;
   };
   contracts: Contract[];
   claims: Claim[];
@@ -219,7 +223,22 @@ export default function ClientDashboardClient({
   const [claims, setClaims] = useState<Claim[]>(initialClaims);
 
   // UI state
-  const [activeTab, setActiveTab] = useState<'overview' | 'apply' | 'claim' | 'documents'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'apply' | 'claim' | 'documents' | 'profile'>('overview');
+
+  // ── Toast notifications (replaces browser alert())
+  type Toast = { id: number; message: string; type: 'success' | 'error' | 'info' };
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const showToast = (message: string, type: Toast['type'] = 'info') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
+  };
+
+  // ── Confirm sheet (replaces window.confirm())
+  const [confirmSheet, setConfirmSheet] = useState<{ open: boolean; message: string; onConfirm: () => void } | null>(null);
+  const showConfirm = (message: string, onConfirm: () => void) => {
+    setConfirmSheet({ open: true, message, onConfirm });
+  };
   
   // Set default tab to apply if new client
   useEffect(() => {
@@ -543,24 +562,24 @@ export default function ClientDashboardClient({
 
   // Handle Cancel Pending Policy Application
   const handleCancelContract = async (contractId: string) => {
-    if (!window.confirm(isRtl ? 'هل أنت متأكد من إلغاء طلب التأمين هذا؟' : 'Are you sure you want to cancel this insurance request?')) {
-      return;
-    }
-    try {
-      const response = await fetch('/api/client/contracts/cancel', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contractId }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to cancel');
+    showConfirm(
+      isRtl ? 'هل أنت متأكد من إلغاء طلب التأمين هذا؟' : 'Are you sure you want to cancel this insurance request?',
+      async () => {
+        try {
+          const response = await fetch('/api/client/contracts/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contractId }),
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.message || 'Failed to cancel');
+          setContracts(prev => prev.filter(c => c.id !== contractId));
+          showToast(isRtl ? 'تم إلغاء الطلب بنجاح' : 'Application cancelled successfully', 'success');
+        } catch (err: any) {
+          showToast(err.message || 'Error cancelling request', 'error');
+        }
       }
-      setContracts(prev => prev.filter(c => c.id !== contractId));
-      alert(isRtl ? 'تم إلغاء الطلب بنجاح' : 'Application cancelled successfully');
-    } catch (err: any) {
-      alert(err.message || 'Error cancelling request');
-    }
+    );
   };
 
   // Handle Print Certificate Action
@@ -617,7 +636,7 @@ export default function ClientDashboardClient({
   const handleCardPaymentSubmitStep1 = (e: React.FormEvent) => {
     e.preventDefault();
     if (!cardNumber || !cardExpiry || !cardCvv) {
-      alert(isRtl ? 'يرجى ملء جميع حقول البطاقة.' : 'Please fill in all card details.');
+      showToast(isRtl ? 'يرجى ملء جميع حقول البطاقة.' : 'Please fill in all card details.', 'error');
       return;
     }
     setPaymentLoading(true);
@@ -659,7 +678,7 @@ export default function ClientDashboardClient({
         }, 2000);
 
       } catch (err: any) {
-        alert(err.message || 'Payment failed. Please retry.');
+        showToast(err.message || 'Payment failed. Please retry.', 'error');
       } finally {
         setPaymentLoading(false);
       }
@@ -673,7 +692,7 @@ export default function ClientDashboardClient({
     setClaimSuccessMessage('');
 
     if (!claimContractId) {
-      alert('Please select a policy');
+      showToast(isRtl ? 'يرجى اختيار عقد تأمين' : 'Please select a policy', 'error');
       setIsClaimSubmitting(false);
       return;
     }
@@ -718,7 +737,7 @@ export default function ClientDashboardClient({
         setActiveTab('overview');
       }, 2500);
     } catch (err: any) {
-      alert(err.message || 'Error filing claim');
+      showToast(err.message || 'Error filing claim', 'error');
     } finally {
       setIsClaimSubmitting(false);
     }
@@ -726,6 +745,39 @@ export default function ClientDashboardClient({
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white transition-colors duration-300">
+
+      {/* ── TOAST STACK (top-right, mobile-safe) ── */}
+      <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none" style={{ maxWidth: 'min(340px, calc(100vw - 2rem))' }}>
+        {toasts.map(t => (
+          <div key={t.id} className={`toast-enter pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-2xl shadow-xl text-sm font-semibold ${
+            t.type === 'success' ? 'bg-emerald-600 text-white' :
+            t.type === 'error'   ? 'bg-rose-600 text-white' :
+            'bg-zinc-800 text-white'
+          }`}>
+            <span className="text-base leading-none mt-0.5">{t.type === 'success' ? '✓' : t.type === 'error' ? '✕' : 'ℹ'}</span>
+            <span className="leading-snug">{t.message}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* ── CONFIRM BOTTOM SHEET ── */}
+      {confirmSheet?.open && (
+        <div className="fixed inset-0 z-[90] flex flex-col justify-end" onClick={() => setConfirmSheet(null)}>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="sheet-enter relative bg-white dark:bg-zinc-900 rounded-t-3xl px-6 pt-5 pb-10 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-600 rounded-full mx-auto mb-5" />
+            <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100 text-center mb-6 leading-relaxed">{confirmSheet.message}</p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmSheet(null)} className="flex-1 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 text-sm font-bold text-zinc-600 dark:text-zinc-300 active:scale-95 transition-transform">
+                {isRtl ? 'إلغاء' : 'Cancel'}
+              </button>
+              <button onClick={() => { confirmSheet.onConfirm(); setConfirmSheet(null); }} className="flex-1 py-3 rounded-2xl bg-rose-600 text-white text-sm font-bold active:scale-95 transition-transform">
+                {isRtl ? 'تأكيد' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Top Banner for New Users */}
       {contracts.length === 0 && (
@@ -742,8 +794,28 @@ export default function ClientDashboardClient({
       )}
 
       {/* HEADER SECTION */}
-      <header className="sticky top-0 z-30 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-200/60 dark:border-zinc-800/60">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <header className="sticky top-0 z-30 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-zinc-200/60 dark:border-zinc-800/60">
+        {/* ── Mobile header: compact single row ── */}
+        <div className="flex md:hidden items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center text-white shadow-md">
+              <FileBadge className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-extrabold leading-none">ضمان</p>
+              <p className="text-sm font-black text-zinc-900 dark:text-white leading-tight mt-0.5 truncate max-w-[140px]">{isRtl ? user.fullNameAr : user.fullNameEn}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <ThemeSwitcher />
+            <LanguageSwitcher />
+            <button onClick={handleLogout} className="h-8 w-8 rounded-xl bg-rose-600 text-white flex items-center justify-center active:scale-95 transition-transform" title="Logout">
+              <span className="text-[11px] font-black">✕</span>
+            </button>
+          </div>
+        </div>
+        {/* ── Desktop header: original full layout ── */}
+        <div className="hidden md:flex max-w-7xl mx-auto px-6 py-4 items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/10">
               <FileBadge className="w-5.5 h-5.5" />
@@ -756,64 +828,58 @@ export default function ClientDashboardClient({
           <div className="flex items-center gap-3.5">
             <ThemeSwitcher />
             <LanguageSwitcher />
-            <button 
-              onClick={handleLogout} 
-              className="px-4 py-2 text-xs rounded-xl bg-rose-600 text-white font-extrabold hover:bg-rose-500 shadow-sm active:scale-95 transition-all"
-            >
+            <button onClick={handleLogout} className="px-4 py-2 text-xs rounded-xl bg-rose-600 text-white font-extrabold hover:bg-rose-500 shadow-sm active:scale-95 transition-all">
               {tCommon('logout')}
             </button>
           </div>
         </div>
       </header>
 
-      {/* DASHBOARD TABS NAVIGATION */}
-      <div className="border-b border-zinc-250 dark:border-zinc-800 bg-white dark:bg-zinc-950/40">
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-start gap-1 overflow-x-auto">
+      {/* DASHBOARD TABS NAVIGATION — desktop only, hidden on mobile (bottom nav takes over) */}
+      <div className="hidden md:block border-b border-zinc-250 dark:border-zinc-800 bg-white dark:bg-zinc-950/40">
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-start gap-1 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setActiveTab('overview')}
             disabled={contracts.length === 0}
             className={`px-5 py-4 text-xs font-bold transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
               contracts.length === 0 ? 'opacity-40 cursor-not-allowed border-transparent' :
-              activeTab === 'overview' 
-                ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400' 
+              activeTab === 'overview'
+                ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400'
                 : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
             }`}
           >
             <Layers className="w-4 h-4" />
             {txt('نظرة عامة وبوالصي', 'Aperçu et mes polices', 'Policies Overview')}
           </button>
-          
           <button
             onClick={() => setActiveTab('apply')}
             className={`px-5 py-4 text-xs font-bold transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
-              activeTab === 'apply' 
-                ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400' 
+              activeTab === 'apply'
+                ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400'
                 : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
             }`}
           >
             <Plus className="w-4 h-4" />
             {txt('طلب بوليصة وتأمين', 'Souscrire une police', 'Apply & Submit Files')}
           </button>
-
           <button
             onClick={() => setActiveTab('claim')}
             disabled={activeContractsList.length === 0}
             className={`px-5 py-4 text-xs font-bold transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
               activeContractsList.length === 0 ? 'opacity-40 cursor-not-allowed border-transparent' :
-              activeTab === 'claim' 
-                ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400' 
+              activeTab === 'claim'
+                ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400'
                 : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
             }`}
           >
             <FileCheck2 className="w-4 h-4" />
             {txt('تقديم مطالبة تعويض', 'Déclarer un sinistre', 'File a Claim')}
           </button>
-
           <button
             onClick={() => setActiveTab('documents')}
             className={`px-5 py-4 text-xs font-bold transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
-              activeTab === 'documents' 
-                ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400' 
+              activeTab === 'documents'
+                ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400'
                 : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
             }`}
           >
@@ -828,8 +894,145 @@ export default function ClientDashboardClient({
         </div>
       </div>
 
+      {/* ── MOBILE BOTTOM NAVIGATION BAR — 5 icons ── */}
+      <nav
+        className="md:hidden fixed bottom-0 inset-x-0 z-40"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        {/* raised card effect */}
+        <div className="mx-3 mb-2 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/60 shadow-xl shadow-black/10">
+          <div className="flex items-center h-[58px] px-1">
+
+            {/* 1 — Overview */}
+            <button
+              onClick={() => setActiveTab('overview')}
+              disabled={contracts.length === 0}
+              className={`relative flex-1 flex flex-col items-center justify-center gap-[3px] h-full rounded-xl transition-all duration-150 active:scale-90 ${
+                contracts.length === 0 ? 'opacity-30 pointer-events-none' : ''
+              } ${
+                activeTab === 'overview' ? 'bg-emerald-50 dark:bg-emerald-950/40' : ''
+              }`}
+            >
+              {activeTab === 'overview' && (
+                <span className="absolute top-1 left-1/2 -translate-x-1/2 w-4 h-[3px] rounded-full bg-emerald-500" />
+              )}
+              <Layers
+                strokeWidth={activeTab === 'overview' ? 2.5 : 1.8}
+                className={`w-[22px] h-[22px] transition-all ${
+                  activeTab === 'overview' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400 dark:text-zinc-500'
+                }`}
+              />
+              <span className={`text-[9px] font-bold leading-none transition-colors ${
+                activeTab === 'overview' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400 dark:text-zinc-500'
+              }`}>
+                {txt('بوالصي', 'Polices', 'Policies')}
+              </span>
+            </button>
+
+            {/* 2 — Apply (raised center FAB) */}
+            <div className="flex-1 flex items-center justify-center">
+              <button
+                onClick={() => setActiveTab('apply')}
+                className="relative flex flex-col items-center justify-center w-12 h-12 rounded-2xl shadow-lg shadow-emerald-500/30 active:scale-90 transition-all duration-150"
+                style={{
+                  background: activeTab === 'apply'
+                    ? 'linear-gradient(145deg,#047857,#059669)'
+                    : 'linear-gradient(145deg,#059669,#0d9488)',
+                  marginBottom: '1rem',
+                }}
+              >
+                <Plus className="w-5 h-5 text-white" strokeWidth={2.8} />
+                <span className="text-[8px] text-white/90 font-black leading-none mt-[2px]">
+                  {txt('جديد', 'Nouveau', 'New')}
+                </span>
+              </button>
+            </div>
+
+            {/* 3 — Claims */}
+            <button
+              onClick={() => setActiveTab('claim')}
+              disabled={activeContractsList.length === 0}
+              className={`relative flex-1 flex flex-col items-center justify-center gap-[3px] h-full rounded-xl transition-all duration-150 active:scale-90 ${
+                activeContractsList.length === 0 ? 'opacity-30 pointer-events-none' : ''
+              } ${
+                activeTab === 'claim' ? 'bg-emerald-50 dark:bg-emerald-950/40' : ''
+              }`}
+            >
+              {activeTab === 'claim' && (
+                <span className="absolute top-1 left-1/2 -translate-x-1/2 w-4 h-[3px] rounded-full bg-emerald-500" />
+              )}
+              <FileCheck2
+                strokeWidth={activeTab === 'claim' ? 2.5 : 1.8}
+                className={`w-[22px] h-[22px] transition-all ${
+                  activeTab === 'claim' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400 dark:text-zinc-500'
+                }`}
+              />
+              <span className={`text-[9px] font-bold leading-none transition-colors ${
+                activeTab === 'claim' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400 dark:text-zinc-500'
+              }`}>
+                {txt('مطالبة', 'Sinistre', 'Claims')}
+              </span>
+            </button>
+
+            {/* 4 — Documents */}
+            <button
+              onClick={() => setActiveTab('documents')}
+              className={`relative flex-1 flex flex-col items-center justify-center gap-[3px] h-full rounded-xl transition-all duration-150 active:scale-90 ${
+                activeTab === 'documents' ? 'bg-emerald-50 dark:bg-emerald-950/40' : ''
+              }`}
+            >
+              {activeTab === 'documents' && (
+                <span className="absolute top-1 left-1/2 -translate-x-1/2 w-4 h-[3px] rounded-full bg-emerald-500" />
+              )}
+              <div className="relative">
+                <FileText
+                  strokeWidth={activeTab === 'documents' ? 2.5 : 1.8}
+                  className={`w-[22px] h-[22px] transition-all ${
+                    activeTab === 'documents' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400 dark:text-zinc-500'
+                  }`}
+                />
+                {documentHistory.length > 0 && (
+                  <span className="absolute -top-1 -right-1.5 bg-rose-500 text-white text-[7px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center leading-none">
+                    {documentHistory.length > 9 ? '9+' : documentHistory.length}
+                  </span>
+                )}
+              </div>
+              <span className={`text-[9px] font-bold leading-none transition-colors ${
+                activeTab === 'documents' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400 dark:text-zinc-500'
+              }`}>
+                {txt('ملفات', 'Docs', 'Docs')}
+              </span>
+            </button>
+
+            {/* 5 — Profile */}
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`relative flex-1 flex flex-col items-center justify-center gap-[3px] h-full rounded-xl transition-all duration-150 active:scale-90 ${
+                activeTab === 'profile' ? 'bg-emerald-50 dark:bg-emerald-950/40' : ''
+              }`}
+            >
+              {activeTab === 'profile' && (
+                <span className="absolute top-1 left-1/2 -translate-x-1/2 w-4 h-[3px] rounded-full bg-emerald-500" />
+              )}
+              <UserCircle
+                strokeWidth={activeTab === 'profile' ? 2.5 : 1.8}
+                className={`w-[22px] h-[22px] transition-all ${
+                  activeTab === 'profile' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400 dark:text-zinc-500'
+                }`}
+              />
+              <span className={`text-[9px] font-bold leading-none transition-colors ${
+                activeTab === 'profile' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400 dark:text-zinc-500'
+              }`}>
+                {txt('حسابي', 'Profil', 'Profile')}
+              </span>
+            </button>
+
+          </div>
+        </div>
+      </nav>
+
       {/* MAIN CONTAINER */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 md:px-6 py-5 md:py-8 pb-bottom-nav md:pb-8">
         
         {/* ============================================================== */}
         {/* TAB 1: OVERVIEW & POLICY LIST                                 */}
@@ -837,37 +1040,37 @@ export default function ClientDashboardClient({
         {activeTab === 'overview' && contracts.length > 0 && (
           <div className="space-y-8 animate-fade-in">
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              <div className="rounded-2xl border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-5 hover:shadow-md transition">
-                <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-extrabold">{tCommon('insurancePolicyCount')}</span>
-                <p className="text-3xl font-black mt-2 text-zinc-900 dark:text-white">{contracts.length}</p>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
+              <div className="rounded-2xl border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-4 md:p-5 hover:shadow-md transition">
+                <span className="text-[9px] md:text-[10px] uppercase tracking-wider text-zinc-400 font-extrabold">{tCommon('insurancePolicyCount')}</span>
+                <p className="text-2xl md:text-3xl font-black mt-2 text-zinc-900 dark:text-white">{contracts.length}</p>
                 <div className="flex items-center gap-1 mt-2 text-xxs text-zinc-400 font-medium">
                   <Layers className="w-3.5 h-3.5" />
                   {isRtl ? 'إجمالي البوالص المودعة' : 'Total policies registered'}
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-5 hover:shadow-md transition">
-                <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-extrabold">{tCommon('activePolicies')}</span>
-                <p className="text-3xl font-black mt-2 text-emerald-600 dark:text-emerald-400">{activeContractsList.length}</p>
+              <div className="rounded-2xl border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-4 md:p-5 hover:shadow-md transition">
+                <span className="text-[9px] md:text-[10px] uppercase tracking-wider text-zinc-400 font-extrabold">{tCommon('activePolicies')}</span>
+                <p className="text-2xl md:text-3xl font-black mt-2 text-emerald-600 dark:text-emerald-400">{activeContractsList.length}</p>
                 <div className="flex items-center gap-1 mt-2 text-xxs text-emerald-600 dark:text-emerald-400 font-bold">
                   <CheckCircle className="w-3.5 h-3.5" />
                   {isRtl ? 'نشطة ومغطاة' : 'Fully active and covered'}
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-5 hover:shadow-md transition">
-                <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-extrabold">{tCommon('insuranceClaimCount')}</span>
-                <p className="text-3xl font-black mt-2 text-zinc-900 dark:text-white">{claims.length}</p>
+              <div className="rounded-2xl border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-4 md:p-5 hover:shadow-md transition">
+                <span className="text-[9px] md:text-[10px] uppercase tracking-wider text-zinc-400 font-extrabold">{tCommon('insuranceClaimCount')}</span>
+                <p className="text-2xl md:text-3xl font-black mt-2 text-zinc-900 dark:text-white">{claims.length}</p>
                 <div className="flex items-center gap-1 mt-2 text-xxs text-zinc-400 font-medium">
                   <FileCheck2 className="w-3.5 h-3.5" />
                   {isRtl ? 'مطالبات الحوادث المقدمة' : 'Filed accident reports'}
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-5 hover:shadow-md transition">
-                <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-extrabold">{tCommon('openClaims')}</span>
-                <p className="text-3xl font-black mt-2 text-amber-650 dark:text-amber-400">{openClaimsList.length}</p>
+              <div className="rounded-2xl border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-4 md:p-5 hover:shadow-md transition">
+                <span className="text-[9px] md:text-[10px] uppercase tracking-wider text-zinc-400 font-extrabold">{tCommon('openClaims')}</span>
+                <p className="text-2xl md:text-3xl font-black mt-2 text-amber-650 dark:text-amber-400">{openClaimsList.length}</p>
                 <div className="flex items-center gap-1 mt-2 text-xxs text-amber-600 dark:text-amber-400 font-bold animate-pulse">
                   <Clock className="w-3.5 h-3.5" />
                   {isRtl ? 'قيد الدراسة والمراجعة' : 'Under assessment'}
@@ -885,8 +1088,8 @@ export default function ClientDashboardClient({
                     {isRtl ? 'توزيع الأقساط حسب الفئة' : 'Premium Distribution by Category'}
                   </h4>
                   {portfolioDistribution.length > 0 ? (
-                    <div className="h-[240px] w-full flex flex-col sm:flex-row items-center justify-between gap-4">
-                      <div className="h-[200px] w-full sm:w-1/2">
+                    <div className="h-[180px] md:h-[240px] w-full flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div className="h-[160px] md:h-[200px] w-full sm:w-1/2">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
                             <Pie
@@ -943,7 +1146,7 @@ export default function ClientDashboardClient({
                     {isRtl ? 'القسط السنوي حسب العقد' : 'Annual Premium by Policy'}
                   </h4>
                   {premiumCostByPolicy.length > 0 ? (
-                    <div className="h-[240px] w-full text-[11px]">
+                    <div className="h-[180px] md:h-[240px] w-full text-[11px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                           data={premiumCostByPolicy}
@@ -1815,8 +2018,6 @@ export default function ClientDashboardClient({
           </div>
         )}
 
-      </main>
-
       {/* ============================================================== */}
       {/* EXPANDED ELECTRONIC PAYMENT PORTAL MODAL                       */}
       {/* ============================================================== */}
@@ -2479,6 +2680,77 @@ export default function ClientDashboardClient({
           </div>
         </div>
       )}
+
+      {/* ============================================================== */}
+      {/* TAB 5: PROFILE                                                 */}
+      {/* ============================================================== */}
+      {activeTab === 'profile' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Profile Card */}
+          <div className="rounded-3xl border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 overflow-hidden">
+            {/* Header Banner */}
+            <div className="h-24 bg-gradient-to-r from-emerald-600 to-teal-500 relative">
+              <div className="absolute -bottom-8 left-6 h-16 w-16 rounded-2xl border-4 border-white dark:border-zinc-900 bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg">
+                <UserCircle className="w-8 h-8 text-white" />
+              </div>
+            </div>
+            <div className="pt-10 px-6 pb-6">
+              <h2 className="text-xl font-black text-zinc-900 dark:text-white">{isRtl ? user.fullNameAr : user.fullNameEn}</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">{user.email}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-xs font-bold border border-emerald-200 dark:border-emerald-800">
+                  {txt('عميل ضمان', 'Client Daman', 'Daman Client')}
+                </span>
+                <span className="px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-bold">
+                  {contracts.length} {txt('بوليصة', 'police(s)', 'policy(ies)')}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Info Rows */}
+          <div className="rounded-3xl border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 divide-y divide-zinc-100 dark:divide-zinc-800 overflow-hidden">
+            {[
+              { label: txt('البريد الإلكتروني', 'Email', 'Email'), value: user.email, icon: '📧' },
+              { label: txt('رقم الهاتف', 'Téléphone', 'Phone'), value: user.phone || txt('غير محدد', 'Non renseigné', 'Not set'), icon: '📞' },
+              { label: txt('رقم التعريف الوطني', 'N° identité', 'NIN'), value: user.nin || '—', icon: '🪪' },
+              { label: txt('تاريخ الانضمام', 'Membre depuis', 'Member since'), value: user.createdAt ? new Date(user.createdAt).toLocaleDateString(locale) : '—', icon: '📅' },
+            ].map(({ label, value, icon }) => (
+              <div key={label} className="flex items-center gap-4 px-5 py-4">
+                <span className="text-xl w-8 text-center shrink-0">{icon}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] uppercase tracking-wider text-zinc-400 font-extrabold leading-none mb-1">{label}</p>
+                  <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100 truncate">{value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Quick Actions */}
+          <div className="rounded-3xl border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 divide-y divide-zinc-100 dark:divide-zinc-800 overflow-hidden">
+            <button className="w-full flex items-center gap-4 px-5 py-4 text-left active:bg-zinc-50 dark:active:bg-zinc-800/50 transition-colors" onClick={() => setActiveTab('documents')}>
+              <FileText className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span className="flex-1 text-sm font-semibold text-zinc-800 dark:text-zinc-100">{txt('ملفاتي', 'Mes documents', 'My Documents')}</span>
+              <span className="text-zinc-300 dark:text-zinc-600 text-lg">{isRtl ? '‹' : '›'}</span>
+            </button>
+            <button className="w-full flex items-center gap-4 px-5 py-4 text-left active:bg-zinc-50 dark:active:bg-zinc-800/50 transition-colors" onClick={() => setActiveTab('overview')}>
+              <Layers className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span className="flex-1 text-sm font-semibold text-zinc-800 dark:text-zinc-100">{txt('بوالصي', 'Mes polices', 'My Policies')}</span>
+              <span className="text-zinc-300 dark:text-zinc-600 text-lg">{isRtl ? '‹' : '›'}</span>
+            </button>
+            <button
+              className="w-full flex items-center gap-4 px-5 py-4 text-left active:bg-rose-50 dark:active:bg-rose-950/20 transition-colors"
+              onClick={handleLogout}
+            >
+              <span className="w-5 h-5 flex items-center justify-center text-rose-500 shrink-0 text-base">⏏</span>
+              <span className="flex-1 text-sm font-semibold text-rose-600">{tCommon('logout')}</span>
+            </button>
+          </div>
+
+        </div>
+      )}
+
+      </main>
 
     </div>
   );

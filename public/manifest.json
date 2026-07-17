@@ -1,0 +1,20 @@
+{
+  "name": "ضمان | Daman Insurance",
+  "short_name": "ضمان",
+  "description": "منصة ضمان لإدارة التأمينات في الجزائر | Daman Algerian Insurance Management Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#052e16",
+  "theme_color": "#059669",
+  "orientation": "portrait-primary",
+  "lang": "ar",
+  "categories": ["finance", "business"],
+  "icons": [
+    {
+      "src": "/globe.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

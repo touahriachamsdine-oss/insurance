@@ -19,12 +19,22 @@ export default function ThemeSwitcher() {
     root.classList.add(initial);
   }, []);
 
+  useEffect(() => {
+    const handleSync = () => {
+      const stored = localStorage.getItem('theme') as Theme | null;
+      if (stored) setTheme(stored);
+    };
+    window.addEventListener('theme-changed', handleSync);
+    return () => window.removeEventListener('theme-changed', handleSync);
+  }, []);
+
   const changeTheme = (newTheme: Theme) => {
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
     const root = document.documentElement;
     root.classList.remove('light', 'dark', 'night');
     root.classList.add(newTheme);
+    window.dispatchEvent(new Event('theme-changed'));
   };
 
   // Avoid hydration mismatch — render neutral skeleton until mounted

@@ -562,3 +562,75 @@ select:focus {
 /* Sage glow shadow */
 .shadow-sage { box-shadow: var(--shadow-sage); }
 .shadow-cream { box-shadow: var(--shadow-cream); }
+
+/* ==========================================================
+   MOBILE / PWA UTILITIES
+   ========================================================== */
+
+/* Safe area inset padding — critical for iPhone notch / home bar */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.px-safe {
+  padding-left:  env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Bottom nav extra spacing — content won't hide behind fixed bottom nav */
+.pb-bottom-nav {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Prevent iOS tap highlight flash on interactive elements */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* iOS input zoom prevention: font-size must be >= 16px */
+input, select, textarea {
+  font-size: 16px;
+}
+
+/* Smooth momentum scrolling on iOS */
+.scroll-smooth-ios {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+/* Hide scrollbars but keep scroll on mobile */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Toast slide-in animation */
+@keyframes slideInRight {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0);    opacity: 1; }
+  to   { transform: translateX(110%); opacity: 0; }
+}
+.toast-enter { animation: slideInRight 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.toast-exit  { animation: slideOutRight 0.25s ease-in forwards; }
+
+/* Confirm sheet slide-up */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.sheet-enter { animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+/* Bottom nav active indicator pill */
+.bottom-nav-pill {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2rem;
+  height: 2px;
+  border-radius: 0 0 4px 4px;
+  background: #059669;
+}
