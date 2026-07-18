@@ -793,27 +793,8 @@ export default function ClientDashboardClient({
         </div>
       )}
 
-      {/* HEADER SECTION */}
+      {/* HEADER SECTION — hidden on mobile, shown on desktop */}
       <header className="sticky top-0 z-30 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-zinc-200/60 dark:border-zinc-800/60">
-        {/* ── Mobile header: compact single row ── */}
-        <div className="flex md:hidden items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center text-white shadow-md">
-              <FileBadge className="w-4.5 h-4.5" />
-            </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-extrabold leading-none">ضمان</p>
-              <p className="text-sm font-black text-zinc-900 dark:text-white leading-tight mt-0.5 truncate max-w-[140px]">{isRtl ? user.fullNameAr : user.fullNameEn}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <ThemeSwitcher />
-            <LanguageSwitcher />
-            <button onClick={handleLogout} className="h-8 w-8 rounded-xl bg-rose-600 text-white flex items-center justify-center active:scale-95 transition-transform" title="Logout">
-              <span className="text-[11px] font-black">✕</span>
-            </button>
-          </div>
-        </div>
         {/* ── Desktop header: original full layout ── */}
         <div className="hidden md:flex max-w-7xl mx-auto px-6 py-4 items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
@@ -901,7 +882,7 @@ export default function ClientDashboardClient({
       >
         {/* raised card effect */}
         <div className="mx-3 mb-2 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/60 shadow-xl shadow-black/10">
-          <div className="flex items-center h-[58px] px-1">
+          <div className="flex items-center h-[62px] px-1">
 
             {/* 1 — Overview */}
             <button
@@ -929,26 +910,7 @@ export default function ClientDashboardClient({
               </span>
             </button>
 
-            {/* 2 — Apply (raised center FAB) */}
-            <div className="flex-1 flex items-center justify-center">
-              <button
-                onClick={() => setActiveTab('apply')}
-                className="relative flex flex-col items-center justify-center w-12 h-12 rounded-2xl shadow-lg shadow-emerald-500/30 active:scale-90 transition-all duration-150"
-                style={{
-                  background: activeTab === 'apply'
-                    ? 'linear-gradient(145deg,#047857,#059669)'
-                    : 'linear-gradient(145deg,#059669,#0d9488)',
-                  marginBottom: '1rem',
-                }}
-              >
-                <Plus className="w-5 h-5 text-white" strokeWidth={2.8} />
-                <span className="text-[8px] text-white/90 font-black leading-none mt-[2px]">
-                  {txt('جديد', 'Nouveau', 'New')}
-                </span>
-              </button>
-            </div>
-
-            {/* 3 — Claims */}
+            {/* 2 — Claims */}
             <button
               onClick={() => setActiveTab('claim')}
               disabled={activeContractsList.length === 0}
@@ -973,6 +935,25 @@ export default function ClientDashboardClient({
                 {txt('مطالبة', 'Sinistre', 'Claims')}
               </span>
             </button>
+
+            {/* 3 — Apply (CENTER FAB — raised Plus button) */}
+            <div className="flex-1 flex items-center justify-center" style={{ marginBottom: '1.6rem' }}>
+              <button
+                onClick={() => setActiveTab('apply')}
+                className="relative flex flex-col items-center justify-center w-[58px] h-[58px] rounded-[20px] active:scale-90 transition-all duration-150"
+                style={{
+                  background: activeTab === 'apply'
+                    ? 'linear-gradient(145deg,#047857,#059669)'
+                    : 'linear-gradient(145deg,#059669,#0d9488)',
+                  boxShadow: '0 8px 24px rgba(5,150,105,0.45), 0 2px 8px rgba(0,0,0,0.15)',
+                }}
+              >
+                <Plus className="w-7 h-7 text-white" strokeWidth={2.8} />
+                <span className="text-[8px] text-white/90 font-black leading-none mt-[2px]">
+                  {txt('جديد', 'Nouveau', 'New')}
+                </span>
+              </button>
+            </div>
 
             {/* 4 — Documents */}
             <button
@@ -1030,6 +1011,7 @@ export default function ClientDashboardClient({
           </div>
         </div>
       </nav>
+
 
       {/* MAIN CONTAINER */}
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-5 md:py-8 pb-bottom-nav md:pb-8">

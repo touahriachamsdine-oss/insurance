@@ -634,3 +634,17 @@ input, select, textarea {
   border-radius: 0 0 4px 4px;
   background: #059669;
 }
+
+/* FAB shadow ring glow — used for the center Plus button */
+.fab-ring {
+  box-shadow:
+    0 12px 32px rgba(5, 150, 105, 0.55),
+    0 3px 10px rgba(0, 0, 0, 0.18),
+    0 0 0 4px rgba(5, 150, 105, 0.18);
+}
+
+/* Extra bottom nav padding when content must clear the floating FAB card */
+.pb-bottom-nav-fab {
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+}
+
