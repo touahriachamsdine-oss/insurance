@@ -1,4 +1,4 @@
-# Daman Insurance Management Platform - AI Assistant Context (CLAUDE.md)
+# Insure Me Insurance Management Platform - AI Assistant Context (CLAUDE.md)
 
 This file contains metadata, architecture overview, build/test commands, and references to help Antigravity and other AI coding assistants instantly understand the project.
 

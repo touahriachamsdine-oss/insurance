@@ -999,7 +999,7 @@ export default function AdminDashboardClient({
                     System Administration Panel
                   </h3>
                   <p className="text-sm text-zinc-650 dark:text-zinc-300 mt-4 leading-relaxed">
-                    Welcome to the Algerian Daman Insurance Management Platform. As a Super Administrator, you hold full auditing and credentialing rights over insurance partners and specialized professionals.
+                    Welcome to the Algerian Insure Me Insurance Management Platform. As a Super Administrator, you hold full auditing and credentialing rights over insurance partners and specialized professionals.
                   </p>
                   <p className="text-sm text-zinc-650 dark:text-zinc-300 mt-3 leading-relaxed">
                     Always verify company license certificates and broker authorization credentials with the Ministry of Finance records before approving registration.

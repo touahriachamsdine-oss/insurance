@@ -29,13 +29,17 @@ export const viewport: Viewport = {
 };
 
 export const metadata = {
-  title: 'ضمان | Daman Insurance',
-  description: 'منصة ضمان لإدارة التأمينات في الجزائر',
+  title: 'أضمن لي | Insure Me',
+  description: 'منصة أضمن لي لإدارة التأمينات في الجزائر',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'ضمان',
+    title: 'أضمن لي',
   },
 };
 

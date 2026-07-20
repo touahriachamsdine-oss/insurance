@@ -785,9 +785,9 @@ export default function ClientDashboardClient({
           <Sparkles className="w-4 h-4 animate-bounce" />
           <span>
             {txt(
-              'مرحباً بك في ضمان! يرجى تقديم طلبك الأول لتفعيل بوالص التأمين والمطالبات.',
-              'Bienvenue sur Daman ! Veuillez soumettre votre première demande de police d\'assurance ci-dessous.',
-              'Welcome to Daman! Submit your first insurance policy application below to start.'
+              'مرحباً بك في Insure Me! يرجى تقديم طلبك الأول لتفعيل بوالص التأمين والمطالبات.',
+              'Bienvenue sur Insure Me ! Veuillez soumettre votre première demande de police d\'assurance ci-dessous.',
+              'Welcome to Insure Me! Submit your first insurance policy application below to start.'
             )}
           </span>
         </div>
@@ -2225,7 +2225,7 @@ export default function ClientDashboardClient({
                       {/* Bank Coordinates */}
                       <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-955 border border-zinc-200/60 dark:border-zinc-800 space-y-2 text-xxs">
                         <p className="font-bold text-zinc-800 dark:text-zinc-200 text-center border-b border-zinc-150 dark:border-zinc-800/80 pb-2">
-                          {isRtl ? 'الحساب البنكي الرسمي لشركة Daman' : 'Official Daman Bank Account'}
+                          {isRtl ? 'الحساب البنكي الرسمي لشركة Insure Me' : 'Official Insure Me Bank Account'}
                         </p>
                         <div className="flex justify-between">
                           <span className="text-zinc-450">{isRtl ? 'البنك:' : 'Bank Name:'}</span>
@@ -2483,7 +2483,7 @@ export default function ClientDashboardClient({
                   <div className="text-right font-serif max-w-[280px]" dir="rtl">
                     <p className="text-[10px] font-black tracking-wider">الجمهورية الجزائرية الديمقراطية الشعبية</p>
                     <p className="text-[8px] text-zinc-500 mt-0.5">وزارة المالية - مديرية الإشراف على التأمينات</p>
-                    <p className="text-xs font-bold text-emerald-850 mt-3">شركة ضمان للتأمين ش.م.جزائرية</p>
+                    <p className="text-xs font-bold text-emerald-850 mt-3">شركة Insure Me للتأمين ش.م.جزائرية</p>
                     <p className="text-[8px] text-zinc-400 font-mono mt-0.5">رخصة رقم: 01-12/أ14-2022</p>
                   </div>
                 </div>
@@ -2603,7 +2603,7 @@ export default function ClientDashboardClient({
                 {/* Bottom Declarations / Terms of Use */}
                 <div className="text-[7px] text-zinc-400 font-serif leading-relaxed border-t border-zinc-350 pt-3 text-justify my-2">
                   <p>
-                    <strong>Declaration:</strong> This certificate is issued as evidence of active insurance coverage under written policy contract constraints stored within the Daman Insurance ledger. The contract terms, limits, and deductible requirements are fully governed by Algerian Commercial Law (Decree 95-07 relative to insurance regulations). Verification of this certificate validity can be verified electronically.
+                    <strong>Declaration:</strong> This certificate is issued as evidence of active insurance coverage under written policy contract constraints stored within the Insure Me Insurance ledger. The contract terms, limits, and deductible requirements are fully governed by Algerian Commercial Law (Decree 95-07 relative to insurance regulations). Verification of this certificate validity can be verified electronically.
                   </p>
                   <p className="mt-1" dir="rtl">
                     <strong>تصريح رسمي:</strong> تُمنح هذه الشهادة كدليل رسمي على سريان التغطية التأمينية بموجب بنود وأحكام عقد التأمين المبرم والمسجل إلكترونياً. تخضع شروط التعاقد والالتزامات وحدود المسؤوليات للقانون التجاري الجزائري والأمر رقم 95-07 المتعلق بالتأمينات. يمكن التحقق من صحة وصلاحية هذه الشهادة عبر مسح رمز الاستجابة السريع.
@@ -2634,15 +2634,15 @@ export default function ClientDashboardClient({
                       <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="3,1" />
                       <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" strokeWidth="1" />
                       <text x="50" y="44" textAnchor="middle" fontSize="6" fontWeight="black" fill="currentColor">DAMAN INSURANCE</text>
-                      <text x="50" y="52" textAnchor="middle" fontSize="8" fontWeight="black" fill="currentColor">ضمان للتأمين</text>
+                      <text x="50" y="52" textAnchor="middle" fontSize="8" fontWeight="black" fill="currentColor">Insure Me للتأمين</text>
                       <text x="50" y="60" textAnchor="middle" fontSize="5" fontWeight="bold" fill="currentColor">GENERAL SEAL</text>
                     </svg>
                   </div>
 
                   {/* Official Signatures */}
                   <div className="text-right flex flex-col items-end">
-                    <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-wide">For and on behalf of Daman Spa</p>
-                    <p className="text-[8px] font-bold text-zinc-850 mt-0.5" dir="rtl">عن المدير العام لشركة ضمان</p>
+                    <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-wide">For and on behalf of Insure Me Spa</p>
+                    <p className="text-[8px] font-bold text-zinc-850 mt-0.5" dir="rtl">عن المدير العام لشركة Insure Me</p>
                     
                     {/* Mock Signature Line */}
                     <div className="h-6 w-24 flex items-center justify-center my-1 opacity-70">
@@ -2681,7 +2681,7 @@ export default function ClientDashboardClient({
               <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">{user.email}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <span className="px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-xs font-bold border border-emerald-200 dark:border-emerald-800">
-                  {txt('عميل ضمان', 'Client Daman', 'Daman Client')}
+                  {txt('عميل Insure Me', 'Client Insure Me', 'Insure Me Client')}
                 </span>
                 <span className="px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-bold">
                   {contracts.length} {txt('بوليصة', 'police(s)', 'policy(ies)')}

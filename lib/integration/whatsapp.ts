@@ -163,7 +163,7 @@ export async function handleIncomingWhatsApp(
   switch (messageType) {
     case 'text':
       return {
-        response: 'شكراً لتواصلك مع ضمان. كيف يمكننا مساعدتك؟',
+        response: 'شكراً لتواصلك مع Insure Me. كيف يمكننا مساعدتك؟',
         action: 'greeting',
       };
     case 'document':

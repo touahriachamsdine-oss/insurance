@@ -5,8 +5,8 @@ import { routing } from '@/i18n/routing';
 import ThemeInitializer from '@/components/ThemeInitializer';
 
 export const metadata = {
-  title: 'ضمان | Daman Insurance',
-  description: 'منصة ضمان لإدارة التأمينات في الجزائر | Daman Algerian Insurance Management Platform',
+  title: 'أضمن لي | Insure Me',
+  description: 'منصة أضمن لي لإدارة التأمينات في الجزائر | Insure Me Algerian Insurance Management Platform',
 };
 
 export default async function LocaleLayout({

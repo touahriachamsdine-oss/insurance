@@ -59,8 +59,8 @@ export async function handleUSSDRequest(request: USSDRequest): Promise<USSDRespo
     case '0':
       return {
         message: lang === 'ar'
-          ? `مرحباً بك في ضمان للتأمين\n${MENU_MAIN_AR}`
-          : `Bienvenue chez Daman Assurance\n${MENU_MAIN_FR}`,
+          ? `مرحباً بك في Insure Me للتأمين\n${MENU_MAIN_AR}`
+          : `Bienvenue chez Insure Me Assurance\n${MENU_MAIN_FR}`,
         type: 'input',
         nextMenu: 'main',
       };
@@ -126,8 +126,8 @@ export async function sendPremiumReminder(
   language: 'ar' | 'fr'
 ): Promise<boolean> {
   const message = language === 'ar'
-    ? `عزيزي ${clientName}، نذكرك بأن قسط التأمين الخاص بك بمبلغ ${amount} د.ج مستحق في ${dueDate}. الرجاء الدفع في الوقت المحدد لتجنب انقطاع التغطية. - ضمان للتأمين`
-    : `Cher ${clientName}, votre prime d'assurance de ${amount} DZD arrive à échéance le ${dueDate}. Veuillez payer à temps pour éviter une interruption de couverture. - Daman Assurance`;
+    ? `عزيزي ${clientName}، نذكرك بأن قسط التأمين الخاص بك بمبلغ ${amount} د.ج مستحق في ${dueDate}. الرجاء الدفع في الوقت المحدد لتجنب انقطاع التغطية. - Insure Me للتأمين`
+    : `Cher ${clientName}, votre prime d'assurance de ${amount} DZD arrive à échéance le ${dueDate}. Veuillez payer à temps pour éviter une interruption de couverture. - Insure Me Assurance`;
 
   return sendSMS({ to: phoneNumber, message, language });
 }
@@ -151,8 +151,8 @@ export async function sendClaimStatusUpdate(
   const statusText = statusMessages[status]?.[language] || status;
 
   const message = language === 'ar'
-    ? `تحديث المطالبة ${claimNumber}: ${statusText}. - ضمان للتأمين`
-    : `Mise à jour sinistre ${claimNumber}: ${statusText}. - Daman Assurance`;
+    ? `تحديث المطالبة ${claimNumber}: ${statusText}. - Insure Me للتأمين`
+    : `Mise à jour sinistre ${claimNumber}: ${statusText}. - Insure Me Assurance`;
 
   return sendSMS({ to: phoneNumber, message, language });
 }
@@ -167,8 +167,8 @@ export async function sendRenewalReminder(
   language: 'ar' | 'fr'
 ): Promise<boolean> {
   const message = language === 'ar'
-    ? `وثيقتك رقم ${policyNumber} ستنتهي في ${expiryDate}. جدد الآن لتجنب انقطاع التغطية. اتصل بوكيلك أو زر موقعنا. - ضمان للتأمين`
-    : `Votre police ${policyNumber} expire le ${expiryDate}. Renouvelez maintenant pour éviter toute interruption. Contactez votre agent ou visitez notre site. - Daman Assurance`;
+    ? `وثيقتك رقم ${policyNumber} ستنتهي في ${expiryDate}. جدد الآن لتجنب انقطاع التغطية. اتصل بوكيلك أو زر موقعنا. - Insure Me للتأمين`
+    : `Votre police ${policyNumber} expire le ${expiryDate}. Renouvelez maintenant pour éviter toute interruption. Contactez votre agent ou visitez notre site. - Insure Me Assurance`;
 
   return sendSMS({ to: phoneNumber, message, language });
 }

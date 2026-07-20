@@ -1,12 +1,12 @@
 {
   "common": {
-    "appName": "Daman",
-    "tagline": "Secure Insurance Management for Algeria",
+    "appName": "Insure Me",
+    "tagline": "Your Insurance, Simplified",
     "heroBeta": "Trusted Algerian insurance.",
-    "heroSubtitle": "Daman brings modern insurance administration to drivers, families, and local companies across Algeria.",
+    "heroSubtitle": "Insure Me brings modern insurance administration to drivers, families, and local companies across Algeria.",
     "heroClientButton": "Client Portal",
     "heroPartnerButton": "Partner Login",
-    "platformName": "Daman Platform",
+    "platformName": "Insure Me",
     "activeCarContract": "Active car insurance",
     "activeContracts": "Active Policies",
     "processedClaims": "Processed Claims",
@@ -76,11 +76,11 @@
     "brokerCreateQuote": "Create Quote",
     "brokerQuoteSubmit": "Send Quote",
     "brokerQuoteNotes": "Quote Notes",
-    "whySectionTitle": "Why Daman",
+    "whySectionTitle": "Why Insure Me",
     "navHome": "Home",
     "navEstimator": "Estimator",
     "navPartners": "Partners",
-    "navWhy": "Why Daman",
+    "navWhy": "Why Insure Me",
     "whyHeading": "Insurance made simple, secure, and local",
     "whySubtitle": "From roadside assistance to agricultural protection, our Algerian-first platform keeps your policies in one place and your claims moving faster.",
     "feature1Title": "Fast Claims",
@@ -95,7 +95,7 @@
     "testimonialsHeading": "Trusted by drivers and carriers",
     "client1Name": "Yasmine B.",
     "client1Role": "Fleet Manager",
-    "client1Quote": "Daman helped us manage dozens of contracts with confidence and faster payouts.",
+    "client1Quote": "Insure Me helped us manage dozens of contracts with confidence and faster payouts.",
     "client2Name": "Kamel R.",
     "client2Role": "Individual policyholder",
     "client2Quote": "I found the right coverage and filed a claim in minutes without leaving home.",
@@ -373,4 +373,3 @@
     "paymentPortal": "Electronic Payment Portal"
   }
 }
-

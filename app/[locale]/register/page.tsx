@@ -108,8 +108,8 @@ export default function RegisterHubPage() {
         </h1>
         <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
           {isRtl
-            ? 'اختر دورك لبدء التسجيل في منصة ضمان'
-            : 'Choose your role to start registration on the Daman platform'}
+            ? 'اختر دورك لبدء التسجيل في منصة Insure Me'
+            : 'Choose your role to start registration on the Insure Me platform'}
         </p>
       </div>
 

@@ -1,17 +1,26 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import PremiumCalculator from '@/components/PremiumCalculator';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { ChevronDown, ExternalLink, MapPin } from 'lucide-react';
 import { Home, Building2, ShieldCheck, LogIn, User } from 'lucide-react';
 
 export default function LandingPage() {
   const tCommon = useTranslations('common');
   const tAuth = useTranslations('auth');
+  const locale = useLocale();
+  const isRtl = locale === 'ar';
   const [activeTab, setActiveTab] = useState('hero');
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
+
+  const toggleCategory = (key: string) => {
+    setOpenCategory((prev) => (prev === key ? null : key));
+  };
 
   // Handle smooth scroll to section
   const scrollToSection = (id: string) => {
@@ -65,12 +74,16 @@ export default function LandingPage() {
       <header className="hidden md:block sticky top-0 z-50 w-full border-b border-[#DCCFC0]/70 dark:border-zinc-900 bg-white/80 dark:bg-zinc-950/70 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-700 dark:bg-emerald-600 flex items-center justify-center text-white font-extrabold text-xl shadow-md shadow-emerald-700/20">
-              ض
-            </div>
-            <span className="text-xl font-bold tracking-tight text-zinc-950 dark:text-white">
-              {tCommon('appName')}
-            </span>
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/logo-icon.png"
+                alt={tCommon('appName')}
+                width={200}
+                height={112}
+                className="h-14 w-auto"
+                priority
+              />
+            </Link>
           </div>
 
           <div className="flex items-center gap-4">
@@ -102,12 +115,16 @@ export default function LandingPage() {
         <div id="hero" className="max-w-7xl w-full mx-auto px-6 pt-8 pb-10 md:py-24">
           {/* Mobile: Brand mark at top */}
           <div className="md:hidden flex items-center gap-3 mb-8">
-            <div className="w-9 h-9 rounded-xl bg-emerald-700 dark:bg-emerald-600 flex items-center justify-center text-white font-extrabold text-lg shadow-md shadow-emerald-700/20">
-              ض
-            </div>
-            <span className="text-lg font-black tracking-tight text-zinc-950 dark:text-white">
-              {tCommon('appName')}
-            </span>
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/logo-icon.png"
+                alt={tCommon('appName')}
+                width={200}
+                height={112}
+                className="h-12 w-auto"
+                priority
+              />
+            </Link>
             {/* Mobile: theme + lang in hero bar */}
             <div className="flex items-center gap-1.5 ms-auto">
               <ThemeSwitcher />
@@ -229,6 +246,122 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
+
+            {/* ── Insurance Providers Directory (accordion) ── */}
+            <div className="mt-16 sm:mt-20">
+              <div className="text-center space-y-4 max-w-xl mx-auto mb-12">
+                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200/40 bg-emerald-100/40 dark:border-emerald-900/30 dark:bg-emerald-900/20 px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-300">
+                  {isRtl ? 'دليل شركات التأمين' : 'Insurance Providers Directory'}
+                </span>
+                <h2 className="text-3xl font-black text-zinc-950 dark:text-white">
+                  {isRtl ? 'شركات التأمين المعتمدة في الجزائر' : 'Approved Algerian Insurance Companies'}
+                </h2>
+                <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
+                  {isRtl
+                    ? 'قائمة رسمية بشركات التأمين النشطة في السوق الجزائري، مصنفة حسب نوع النشاط.'
+                    : 'Official list of active insurance companies in the Algerian market, classified by type.'}
+                </p>
+              </div>
+
+              <div className="space-y-4 max-w-3xl mx-auto">
+                {[
+                  {
+                    key: 'damage',
+                    label: 'Damage Insurance',
+                    labelAr: 'التأمين على الأضرار',
+                    companies: [
+                      { name: 'CAAR', addr: '48 Rue Didouche Mourad, Alger', web: 'https://www.caar.dz' },
+                      { name: "SAA (Soci\u00E9t\u00E9 Nationale d'Assurance)", addr: 'Immeuble SAA, Bab Ezzouar, Alger', web: 'https://www.saa.dz' },
+                      { name: 'CAAT', addr: '54 Av. des fr\u00E8res Bouadou B.M.R, Alger', web: 'https://www.caat.dz' },
+                      { name: 'CIAR', addr: '11 Chemin des Cr\u00EAtes, Hydra, Alger', web: 'https://www.laciar.com' },
+                      { name: 'GIG Algeria', addr: '01 Rue Tripoli, Hussein Dey, Alger', web: 'https://www.gig.dz' },
+                    ],
+                  },
+                  {
+                    key: 'credit',
+                    label: 'Credit & Guarantee Insurance',
+                    labelAr: 'تأمينات القروض والضمانات',
+                    companies: [
+                      { name: 'CAGEX', addr: '10 Route Nationale n\u00B036, Dely Ibrahim, Alger', web: 'https://www.cagex.dz' },
+                      { name: 'SGCI', addr: 'Cit\u00E9 250 logements, Garidi I, Kouba, Alger', web: 'https://www.sgci.dz' },
+                    ],
+                  },
+                  {
+                    key: 'mutual',
+                    label: 'Mutual Insurance',
+                    labelAr: 'التعاضديات',
+                    companies: [
+                      { name: 'CNMA', addr: '24 Boulevard Victor Hugo, Alger', web: 'https://www.cnma.dz' },
+                    ],
+                  },
+                  {
+                    key: 'reinsurance',
+                    label: 'Reinsurance',
+                    labelAr: 'إعادة التأمين',
+                    companies: [
+                      { name: 'CCR', addr: 'Cit\u00E9 Administrative Plateau Ouled Fayet, Alger', web: 'https://www.ccr.dz' },
+                    ],
+                  },
+                ].map((cat) => (
+                  <div
+                    key={cat.key}
+                    className="rounded-2xl border border-[#DCCFC0]/60 dark:border-zinc-800/60 bg-[#FDF6ED] dark:bg-zinc-900 shadow-sm overflow-hidden transition duration-300"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => toggleCategory(cat.key)}
+                      className="w-full flex items-center justify-between px-6 py-5 text-start transition-colors duration-200 hover:bg-white/50 dark:hover:bg-zinc-800/50"
+                      aria-expanded={openCategory === cat.key}
+                    >
+                      <span className="text-base font-bold text-[#33452e] dark:text-white">
+                        {isRtl ? cat.labelAr : cat.label}
+                      </span>
+                      <ChevronDown
+                        className={`w-5 h-5 text-[#778873] dark:text-zinc-400 transition-transform duration-200 ${openCategory === cat.key ? 'rotate-180' : ''}`}
+                        strokeWidth={2.5}
+                      />
+                    </button>
+
+                    {openCategory === cat.key && (
+                      <div className="px-6 pb-5 space-y-3">
+                        {cat.companies.map((company) => (
+                          <div
+                            key={company.name}
+                            className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 rounded-xl border border-zinc-200/70 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-950/60 px-4 py-3.5 shadow-sm hover:shadow-md transition duration-200"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <a
+                                  href={company.web}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-bold text-emerald-700 dark:text-emerald-300 hover:underline truncate flex items-center gap-1.5"
+                                >
+                                  {company.name}
+                                  <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-60" strokeWidth={2} />
+                                </a>
+                              </div>
+                              <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                                <MapPin className="w-3 h-3 shrink-0" strokeWidth={1.5} />
+                                <span>{company.addr}</span>
+                              </div>
+                            </div>
+                            <a
+                              href={company.web}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="shrink-0 text-xs font-semibold text-[#778873] dark:text-[#A1BC98] hover:underline truncate"
+                            >
+                              {company.web.replace('https://www.', '')}
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Why choose us */}
@@ -302,6 +435,7 @@ export default function LandingPage() {
             </div>
           </section>
         </div>
+
       </main>
 
       {/* Footer — desktop only */}

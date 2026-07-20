@@ -33,7 +33,7 @@ export default async function proxy(request: NextRequest) {
   const cleanPathname = pathname.replace(/^\/(ar|en)/, '') || '/';
 
   // 2. Fetch session token from cookies
-  const token = request.cookies.get('daman-session')?.value;
+  const token = request.cookies.get('insure-me-session')?.value;
   const session = token ? verifySession(token) : null;
 
   // Define route accessibility

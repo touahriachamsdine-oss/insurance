@@ -1,7 +1,7 @@
 {
-  "name": "ضمان | Daman Insurance",
-  "short_name": "ضمان",
-  "description": "منصة ضمان لإدارة التأمينات في الجزائر | Daman Algerian Insurance Management Platform",
+  "name": "أضمن لي | Insure Me",
+  "short_name": "أضمن لي",
+  "description": "منصة أضمن لي لإدارة التأمينات في الجزائر | Insure Me Algerian Insurance Management Platform",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#052e16",
@@ -11,9 +11,9 @@
   "categories": ["finance", "business"],
   "icons": [
     {
-      "src": "/globe.svg",
+      "src": "/logo.png",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

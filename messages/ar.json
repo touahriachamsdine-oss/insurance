@@ -1,12 +1,12 @@
 {
   "common": {
-    "appName": "ضمان",
-    "tagline": "نظام آمن لإدارة التأمينات في الجزائر",
+    "appName": "أضمن لي",
+    "tagline": "تأمينك، ببساطة",
     "heroBeta": "ثقة في التأمين الجزائري.",
-    "heroSubtitle": "يضع ضمان إدارة التأمينات الحديثة بين يدي السائقين والعائلات والشركات المحلية في الجزائر.",
+    "heroSubtitle": "يضع أضمن لي إدارة التأمينات الحديثة بين يدي السائقين والعائلات والشركات المحلية في الجزائر.",
     "heroClientButton": "بوابة الزبون",
     "heroPartnerButton": "دخول الشركاء",
-    "platformName": "منصة ضمان",
+    "platformName": "أضمن لي",
     "activeCarContract": "تأمين سيارة نشط",
     "activeContracts": "البوالص النشطة",
     "processedClaims": "المطالبات المعالجة",
@@ -76,11 +76,11 @@
     "brokerCreateQuote": "إنشاء عرض",
     "brokerQuoteSubmit": "إرسال العرض",
     "brokerQuoteNotes": "ملاحظات العرض",
-    "whySectionTitle": "لماذا ضمان",
+    "whySectionTitle": "لماذا Insure Me",
     "navHome": "الرئيسية",
     "navEstimator": "الحاسبة",
     "navPartners": "الشركاء",
-    "navWhy": "لماذا ضمان",
+    "navWhy": "لماذا Insure Me",
     "whyHeading": "تأمين سلس وآمن وقريب منك",
     "whySubtitle": "من المساعدة على الطريق إلى الحماية الفلاحية، تبقي منصتنا الجزائرية وثائقك في مكان واحد وتسرع تسوية المطالبات.",
     "feature1Title": "مطالبات سريعة",
@@ -95,7 +95,7 @@
     "testimonialsHeading": "موثوق بهم من السائقين والشركات",
     "client1Name": "ياسمين ب.",
     "client1Role": "مديرة أسطول",
-    "client1Quote": "ساعدتنا ضمان على إدارة عقود كثيرة بثقة وتسريع التعويضات.",
+    "client1Quote": "ساعدتنا Insure Me على إدارة عقود كثيرة بثقة وتسريع التعويضات.",
     "client2Name": "كامل ر.",
     "client2Role": "زبون فردي",
     "client2Quote": "وجدت التغطية المناسبة وقدمت مطالبة في دقائق من دون مغادرة المنزل.",
@@ -373,4 +373,3 @@
     "paymentPortal": "بوابة الدفع الإلكتروني"
   }
 }
-

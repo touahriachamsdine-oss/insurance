@@ -314,7 +314,7 @@ export const ROLE_CONFIGS: Record<Role, RoleConfig> = {
       { key: 'twoFASetup', label: 'Mandatory 2FA Setup', type: 'signature', required: true, validation: [VALIDATORS.required('2FA is mandatory')], helpText: 'Authenticator app QR code — no skip option' },
 
       // ── DIFFERENTIATOR FIELDS ──
-      { key: 'employeeId', label: 'Internal Employee ID / Department', type: 'text', required: true, placeholder: 'DAM-EMP-001', validation: [VALIDATORS.required('Employee ID is required')], isDifferentiator: true, helpText: 'Daman internal staff ID, not customer-facing' },
+      { key: 'employeeId', label: 'Internal Employee ID / Department', type: 'text', required: true, placeholder: 'INS-EMP-001', validation: [VALIDATORS.required('Employee ID is required')], isDifferentiator: true, helpText: 'Insure Me internal staff ID, not customer-facing' },
       { key: 'permissionScope', label: 'Assigned Permission Scope', type: 'text', required: true, placeholder: 'Set by inviter at invite time', validation: [VALIDATORS.required('Permission scope is required')], isDifferentiator: true, helpText: 'Cannot self-select or escalate — set by inviting super admin' },
     ],
     proofVerifications: [
